@@ -10,9 +10,9 @@ The tool supports the following types of checks:
 - TLS/Certificate
 - Kubernetes status and connectivity
 
-More types of checks can be added in the future.
+More check types can be added in the future.
 
-Checks can be executed periodically and asynchronously in the background.
+Checks can be executed periodically and asynchronously in the background or all at once in parallel.
 The tool can be used both with or without Kubernetes.
 
 ## Development
@@ -23,11 +23,12 @@ You can find the development docs in the [docs](./docs) folder.
 
 ## Usage
 
-This tool can be used either as a cli to run the checks once (with optional retries) and get the results printed out as JSON.
-Or as a service that periodically runs the checks and exposes the results through an API endpoint.
-When running in service mode, the tool also exposes SLI metrics in the Prometheus format under the `/metrics` endpoint.
+This tool can be used either as a cli to run the checks once (with optional retries) and get the results printed out as JSON, along with an exit status indicating if all checks passed or not.
+Or as a service that periodically runs the checks and exposes the results through an API endpoint and as SLI metrics in the Prometheus format under the `/metrics` endpoint.
 When running in the cli mode, the checks are stil executed in parallel and the configured `initialDelay` is stil used.
 Use it together with Prometheus, Grafana and AlertManager to create dashboards and alerts for your checks.
+
+The main use case for this tool is to run one deployment in one Kubernetes cluster watching Ingress resources for generating checks and informing a remote deployment, in another cluster or VM, that will actually run the checks, generating metrics that can be scrapped by Prometheus to build SLI dashboards and alerts. But the tool aims to be flexible and allows for different use cases like the ones listed below.
 
 Use cases:
 
