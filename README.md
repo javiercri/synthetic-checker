@@ -8,11 +8,12 @@ The tool supports the following types of checks:
 - DNS
 - Connection
 - TLS/Certificate
-- Kubernetes
+- Kubernetes status and connectivity
 
 More types of checks can be added in the future.
 
 Checks can be executed periodically and asynchronously in the background.
+The tool can be used both with or without Kubernetes.
 
 ## Development
 
@@ -26,7 +27,27 @@ This tool can be used either as a cli to run the checks once (with optional retr
 Or as a service that periodically runs the checks and exposes the results through an API endpoint.
 When running in service mode, the tool also exposes SLI metrics in the Prometheus format under the `/metrics` endpoint.
 When running in the cli mode, the checks are stil executed in parallel and the configured `initialDelay` is stil used.
-The cli mode can be used to run as an `init` container or as an `helm` pre or post hook as a pre-flight check or a post run validation. Or in a CI pipeline.
+Use it together with Prometheus, Grafana and AlertManager to create dashboards and alerts for your checks.
+
+Use cases:
+
+- The cli mode can be used to run as an `init` container or as an `helm` pre or post hook as a pre-flight check or a post install/upgrade validation.
+- The cli mode can also be useful in a CI pipeline to validate services after they are deployed.
+- Running as a service allows to setup uptime monitoring checks that run periodically, the results can be obtained from an API or as Prometheus metrics.
+- Check if your TLS certs are about to expire.
+- The informer mode can be used to setup checks across regions or across different Kubernetes clusters.
+- Running as a service in Kubernetes, it can be used for:
+  - Node pinger, deployed as a DaemonSet, configured with the `k8sPings` check to check itself can detect node-to-node communication issues.
+    This mode is preconfigured in the chart and can be enabled with a flag in the values file.
+  - Checking the status of specific deployments
+  - Checking the status of all deployments in a specific namespace
+  - Checking connectivity to specific pods
+  - Monitoring the node statusses
+  - Watching Ingress resources and automatically setup checks for the services exposed by them. These can include, DNS, connectivity, HTTP and/or TLS cert validation checks.
+  - The informer mode can be used together with the Ingress watcher to setup the checks on a remote instance, allowing the checks to be executed from outside the cluster.
+- You can run different instances (deployments) of the `synthetic-checker` in parallel for different purposes.
+  For example you can have one instance running pre-configured checks, whilst another one watches Ingress resources to dynamically setup checks on yet another instance running remotely to test the ingresses from outside.
+  And another one deployed as a DaemonSet to monitor cross-node connectivity...
 
 See the [usage docs](./usage) and check the `--help` flag on each sub-command to see all available options:
 
