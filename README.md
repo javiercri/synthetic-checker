@@ -31,6 +31,33 @@ Use it together with Prometheus, Grafana and AlertManager to create dashboards a
 
 The main use case for this tool is to run one deployment in one Kubernetes cluster watching Ingress resources for generating checks and informing a remote deployment,
 in another cluster or VM, that will actually run the checks, generating metrics that can be scrapped by Prometheus to build SLI dashboards and alerts.
+
+```mermaid
+graph LR;
+
+ checker[Checker]-->|test|ingress[Ingress];
+ informer[Informer]-->|config|checker;
+
+
+ subgraph MGMT cluster
+  checker;
+ end
+
+ subgraph WL cluster
+  informer-.watch.->ingress;
+  ingress-->|routing rule|service[Service];
+  service-->pod1[Pod];
+  service-->pod2[Pod];
+ end
+
+ classDef plain fill:#ddd,stroke:#fff,stroke-width:4px,color:#000;
+ classDef k8s fill:#326ce5,stroke:#fff,stroke-width:4px,color:#fff;
+ classDef cluster fill:#fff,stroke:#bbb,stroke-width:2px,color:#326ce5;
+ class checker,informer,ingress,service,pod1,pod2 k8s;
+ class client plain;
+ class cluster cluster;
+```
+
 But the tool aims to be flexible and allows for different use cases like the ones listed below.
 
 Use cases:
