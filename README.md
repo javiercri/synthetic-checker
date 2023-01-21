@@ -145,7 +145,8 @@ By default the tool will look for a configuration file in one of the following l
 - The current user's home directory: `${HOME}/checks.yaml`
 - The `/etcd` directory: `/etc/config/checks.yaml`
 
-A sample configuration file can be found in [checks.yaml](./checks.yaml)
+A sample configuration file can be found in [checks.yaml](./checks.yaml).
+Have a look at the [config](./pkg/config) package for details on each configuration field.
 
 ```yaml
 ---
