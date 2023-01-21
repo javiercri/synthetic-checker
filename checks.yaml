@@ -62,3 +62,10 @@ tlsChecks:
 #     kind: "Kafka.v1beta2.kafka.strimzi.io"
 #     interval: 30s
 #     initialDelay: 5s
+# k8sPings:
+#   nodepinger:
+#     labelSelector: "app=cadvisor"
+#     namespace: "monitoring"
+#     interval: 30s
+#     usePodIP: true
+#     port: 8080

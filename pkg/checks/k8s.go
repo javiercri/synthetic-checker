@@ -96,6 +96,10 @@ func (c *k8sCheck) Execute(ctx context.Context) (bool, error) {
 		return false, fmt.Errorf("no resources found")
 	}
 
+	if resCount < c.config.MinCount {
+		return false, fmt.Errorf("not enough resources found, expected %d, got %d", c.config.MinCount, resCount)
+	}
+
 	allOK := true
 	var errs []error
 	for _, u := range ul.Items {
@@ -113,7 +117,11 @@ func (c *k8sCheck) Execute(ctx context.Context) (bool, error) {
 
 	errCount := len(errs)
 	for _, e := range errs {
-		err = fmt.Errorf("%d of %d resources are not ok: %w", errCount, resCount, e)
+		err = fmt.Errorf("%w;", e)
+	}
+
+	if err != nil {
+		err = fmt.Errorf("%d of %d resources are not ok: %w", errCount, resCount, err)
 	}
 	return allOK, err
 }

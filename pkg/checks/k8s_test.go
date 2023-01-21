@@ -39,7 +39,7 @@ func TestK8sCheck(t *testing.T) {
 			name: "failed deployment",
 			expected: expected{
 				ok:  false,
-				err: errors.New("1 of 1 resources are not ok: test: wrong resource state: InProgress - Deployment not Available"),
+				err: errors.New("1 of 1 resources are not ok: test: wrong resource state: InProgress - Deployment not Available;"),
 			},
 			config: config.K8sCheck{
 				Kind:      "Deployment.v1.apps",

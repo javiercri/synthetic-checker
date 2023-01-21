@@ -155,6 +155,8 @@ type K8sCheck struct {
 	LabelSelector string `mapstructure:"labelSelector,omitempty"`
 	// FieldSelector comma separated list of key=value fields
 	FieldSelector string `mapstructure:"fieldSelector,omitempty"`
+	// MinCount is the minimum number of expected resources
+	MinCount int `mapstructure:"minCount,omitempty"`
 	BaseCheck
 }
 
@@ -169,5 +171,9 @@ type K8sPing struct {
 	Protocol string `mapstructure:"protocol,omitempty"`
 	// Port to ping
 	Port int `mapstructure:"port,omitempty"`
+	// UsePodIP set to true to use the pod IP address instead of its name.namespace
+	UsePodIP bool `mapstructure:"usePodIP,omitempty"`
+	// ClusterDomain defaults to cluster.local
+	ClusterDomain string `mapstructure:"clusterDomain,omitempty"`
 	BaseCheck
 }

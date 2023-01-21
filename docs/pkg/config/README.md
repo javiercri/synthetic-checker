@@ -197,7 +197,7 @@ type InformerCfg struct {
 }
 ```
 
-## type [K8sCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L147-L159>)
+## type [K8sCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L147-L161>)
 
 K8sCheck configures a check that probes the status of a Kubernetes resource. It supports any resource type that uses standard k8s status conditions.
 
@@ -213,6 +213,8 @@ type K8sCheck struct {
     LabelSelector string `mapstructure:"labelSelector,omitempty"`
     // FieldSelector comma separated list of key=value fields
     FieldSelector string `mapstructure:"fieldSelector,omitempty"`
+    // MinCount is the minimum number of expected resources
+    MinCount int `mapstructure:"minCount,omitempty"`
     BaseCheck
 }
 ```
@@ -223,7 +225,7 @@ type K8sCheck struct {
 func (c K8sCheck) Equal(other K8sCheck) bool
 ```
 
-## type [K8sPing](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L162-L173>)
+## type [K8sPing](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L164-L179>)
 
 K8sPing is a conntivity check that will try to connect to all Pods matching the selector
 
@@ -238,6 +240,10 @@ type K8sPing struct {
     Protocol string `mapstructure:"protocol,omitempty"`
     // Port to ping
     Port int `mapstructure:"port,omitempty"`
+    // UsePodIP set to true to use the pod IP address instead of its name.namespace
+    UsePodIP bool `mapstructure:"usePodIP,omitempty"`
+    // ClusterDomain defaults to cluster.local
+    ClusterDomain string `mapstructure:"clusterDomain,omitempty"`
     BaseCheck
 }
 ```
