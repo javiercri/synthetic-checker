@@ -28,7 +28,7 @@ import "github.com/luisdavim/synthetic-checker/pkg/config"
 - [type Upstream](<#type-upstream>)
 
 
-## type [BaseCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L39-L46>)
+## type [BaseCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L40-L47>)
 
 BaseCheck holds the common properties across checks
 
@@ -45,22 +45,22 @@ type BaseCheck struct {
 
 ## type [Config](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L9-L18>)
 
-Config represents the checks configuration
+Config represents the checks configuration file structure.
 
 ```go
 type Config struct {
     Informer   InformerCfg          `mapstructure:"informer,omitempty"`
-    HTTPChecks map[string]HTTPCheck `mapstructure:"httpChecks"`
-    GRPCChecks map[string]GRPCCheck `mapstructure:"grpcChecks"`
-    DNSChecks  map[string]DNSCheck  `mapstructure:"dnsChecks"`
-    ConnChecks map[string]ConnCheck `mapstructure:"connChecks"`
-    TLSChecks  map[string]TLSCheck  `mapstructure:"tlsChecks"`
-    K8sChecks  map[string]K8sCheck  `mapstructure:"k8sChecks"`
-    K8sPings   map[string]K8sPing   `mapstructure:"k8sPings"`
+    HTTPChecks map[string]HTTPCheck `mapstructure:"httpChecks,omitempty"`
+    GRPCChecks map[string]GRPCCheck `mapstructure:"grpcChecks,omitempty"`
+    DNSChecks  map[string]DNSCheck  `mapstructure:"dnsChecks,omitempty"`
+    ConnChecks map[string]ConnCheck `mapstructure:"connChecks,omitempty"`
+    TLSChecks  map[string]TLSCheck  `mapstructure:"tlsChecks,omitempty"`
+    K8sChecks  map[string]K8sCheck  `mapstructure:"k8sChecks,omitempty"`
+    K8sPings   map[string]K8sPing   `mapstructure:"k8sPings,omitempty"`
 }
 ```
 
-## type [ConnCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L131-L143>)
+## type [ConnCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L132-L144>)
 
 ConnCheck configures a conntivity check
 
@@ -74,19 +74,19 @@ type ConnCheck struct {
     // "udp", "udp4" (IPv4-only), "udp6" (IPv6-only), "ip", "ip4"
     // (IPv4-only), "ip6" (IPv6-only), "unix", "unixgram" and
     // "unixpacket".
-    // see the net.Dial doccs for details
+    // see the net.Dial docs for more details
     Protocol string `mapstructure:"protocol,omitempty"`
     BaseCheck
 }
 ```
 
-### func \(ConnCheck\) [Equal](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/equal.go#L114>)
+### func \(ConnCheck\) [Equal](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/equal.go#L116>)
 
 ```go
 func (c ConnCheck) Equal(other ConnCheck) bool
 ```
 
-## type [DNSCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L122-L128>)
+## type [DNSCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L123-L129>)
 
 DNSCheck configures a probe to check if a DNS record resolves
 
@@ -100,13 +100,13 @@ type DNSCheck struct {
 }
 ```
 
-### func \(DNSCheck\) [Equal](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/equal.go#L110>)
+### func \(DNSCheck\) [Equal](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/equal.go#L112>)
 
 ```go
 func (c DNSCheck) Equal(other DNSCheck) bool
 ```
 
-## type [GRPCCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L70-L102>)
+## type [GRPCCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L71-L103>)
 
 GRPCCheck configures a gRPC health check probe
 
@@ -146,13 +146,13 @@ type GRPCCheck struct {
 }
 ```
 
-### func \(GRPCCheck\) [Equal](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/equal.go#L34>)
+### func \(GRPCCheck\) [Equal](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/equal.go#L36>)
 
 ```go
 func (c GRPCCheck) Equal(other GRPCCheck) bool
 ```
 
-## type [HTTPCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L50-L67>)
+## type [HTTPCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L51-L68>)
 
 HTTPCheck configures a check for the response from a given URL. The only required field is \`URL\`, which must be a valid URL.
 
@@ -177,27 +177,29 @@ type HTTPCheck struct {
 }
 ```
 
-### func \(HTTPCheck\) [Equal](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/equal.go#L8>)
+### func \(HTTPCheck\) [Equal](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/equal.go#L10>)
 
 ```go
 func (c HTTPCheck) Equal(other HTTPCheck) bool
 ```
 
-## type [InformerCfg](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L20-L28>)
+## type [InformerCfg](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L21-L29>)
+
+InformerCfg allows specifying upstream checks of tests they should run.
 
 ```go
 type InformerCfg struct {
     // InformOnly, when set to true, will prevent the checks from being executed in the local instance
     InformOnly bool `json:"informOnly,omitempty"`
     // RefreshInterval indicates how often the checks will be refreshed upstream.
-    // checks are pushed upstream when they are created or updated, this help keeping the system level-triggered
+    // Checks are pushed upstream when they are created or updated, this helps keeping the system level-triggered
     // it defaults to 24h and should not be done too frequently.
     RefreshInterval metav1.Duration `json:"syncInterval,omitempty"`
     Upstreams       []Upstream      `mapstructure:"upstreams,omitempty"`
 }
 ```
 
-## type [K8sCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L147-L161>)
+## type [K8sCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L148-L162>)
 
 K8sCheck configures a check that probes the status of a Kubernetes resource. It supports any resource type that uses standard k8s status conditions.
 
@@ -219,13 +221,13 @@ type K8sCheck struct {
 }
 ```
 
-### func \(K8sCheck\) [Equal](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/equal.go#L118>)
+### func \(K8sCheck\) [Equal](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/equal.go#L120>)
 
 ```go
 func (c K8sCheck) Equal(other K8sCheck) bool
 ```
 
-## type [K8sPing](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L164-L175>)
+## type [K8sPing](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L165-L176>)
 
 K8sPing is a conntivity check that will try to connect to all Pods matching the selector
 
@@ -244,13 +246,13 @@ type K8sPing struct {
 }
 ```
 
-### func \(K8sPing\) [Equal](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/equal.go#L122>)
+### func \(K8sPing\) [Equal](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/equal.go#L124>)
 
 ```go
 func (c K8sPing) Equal(other K8sPing) bool
 ```
 
-## type [TLSCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L105-L119>)
+## type [TLSCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L106-L120>)
 
 TLSCheck configures a TLS connection check, including certificate validation
 
@@ -272,13 +274,13 @@ type TLSCheck struct {
 }
 ```
 
-### func \(TLSCheck\) [Equal](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/equal.go#L91>)
+### func \(TLSCheck\) [Equal](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/equal.go#L93>)
 
 ```go
 func (c TLSCheck) Equal(other TLSCheck) bool
 ```
 
-## type [Upstream](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L32-L36>)
+## type [Upstream](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L33-L37>)
 
 Upstream represents an upstream synthetic\-checker where to push checks to. This is useful when combined with the insgress watcher to generate remote checks for the local cluster
 

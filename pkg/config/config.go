@@ -5,23 +5,24 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// Config represents the checks configuration
+// Config represents the checks configuration file structure.
 type Config struct {
 	Informer   InformerCfg          `mapstructure:"informer,omitempty"`
-	HTTPChecks map[string]HTTPCheck `mapstructure:"httpChecks"`
-	GRPCChecks map[string]GRPCCheck `mapstructure:"grpcChecks"`
-	DNSChecks  map[string]DNSCheck  `mapstructure:"dnsChecks"`
-	ConnChecks map[string]ConnCheck `mapstructure:"connChecks"`
-	TLSChecks  map[string]TLSCheck  `mapstructure:"tlsChecks"`
-	K8sChecks  map[string]K8sCheck  `mapstructure:"k8sChecks"`
-	K8sPings   map[string]K8sPing   `mapstructure:"k8sPings"`
+	HTTPChecks map[string]HTTPCheck `mapstructure:"httpChecks,omitempty"`
+	GRPCChecks map[string]GRPCCheck `mapstructure:"grpcChecks,omitempty"`
+	DNSChecks  map[string]DNSCheck  `mapstructure:"dnsChecks,omitempty"`
+	ConnChecks map[string]ConnCheck `mapstructure:"connChecks,omitempty"`
+	TLSChecks  map[string]TLSCheck  `mapstructure:"tlsChecks,omitempty"`
+	K8sChecks  map[string]K8sCheck  `mapstructure:"k8sChecks,omitempty"`
+	K8sPings   map[string]K8sPing   `mapstructure:"k8sPings,omitempty"`
 }
 
+// InformerCfg allows specifying upstream checks of tests they should run.
 type InformerCfg struct {
 	// InformOnly, when set to true, will prevent the checks from being executed in the local instance
 	InformOnly bool `json:"informOnly,omitempty"`
 	// RefreshInterval indicates how often the checks will be refreshed upstream.
-	// checks are pushed upstream when they are created or updated, this help keeping the system level-triggered
+	// Checks are pushed upstream when they are created or updated, this helps keeping the system level-triggered
 	// it defaults to 24h and should not be done too frequently.
 	RefreshInterval metav1.Duration `json:"syncInterval,omitempty"`
 	Upstreams       []Upstream      `mapstructure:"upstreams,omitempty"`
@@ -137,7 +138,7 @@ type ConnCheck struct {
 	// "udp", "udp4" (IPv4-only), "udp6" (IPv6-only), "ip", "ip4"
 	// (IPv4-only), "ip6" (IPv6-only), "unix", "unixgram" and
 	// "unixpacket".
-	// see the net.Dial doccs for details
+	// see the net.Dial docs for more details
 	Protocol string `mapstructure:"protocol,omitempty"`
 	BaseCheck
 }

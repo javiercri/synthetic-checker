@@ -5,6 +5,8 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+// TODO: these methods could be auto-generated?
+
 func (c HTTPCheck) Equal(other HTTPCheck) bool {
 	if c.URL != other.URL {
 		return false
