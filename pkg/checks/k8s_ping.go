@@ -40,10 +40,6 @@ func NewK8sPing(name string, config config.K8sPing) (api.Check, error) {
 		config.Timeout = metav1.Duration{Duration: time.Second}
 	}
 
-	if config.ClusterDomain == "" {
-		config.ClusterDomain = "cluster.local"
-	}
-
 	if k8sClient == nil {
 		kfg, err := konfig.GetConfig()
 		if err != nil {
@@ -106,10 +102,7 @@ func (c *k8sPinger) Execute(ctx context.Context) (bool, error) {
 	var errs []error
 
 	for _, p := range pl.Items {
-		address := fmt.Sprintf("%s.%s.%s:%d", p.Name, p.Namespace, c.config.ClusterDomain, c.config.Port)
-		if c.config.UsePodIP {
-			address = fmt.Sprintf("%s:%d", p.Status.PodIP, c.config.Port)
-		}
+		address := fmt.Sprintf("%s:%d", p.Status.PodIP, c.config.Port)
 		conn, err := c.dialer.DialContext(ctx, c.config.Protocol, address)
 		if err != nil {
 			allOK = false

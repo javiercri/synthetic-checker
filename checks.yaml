@@ -67,5 +67,4 @@ tlsChecks:
 #     labelSelector: "app=cadvisor"
 #     namespace: "monitoring"
 #     interval: 30s
-#     usePodIP: true
 #     port: 8080

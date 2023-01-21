@@ -225,7 +225,7 @@ type K8sCheck struct {
 func (c K8sCheck) Equal(other K8sCheck) bool
 ```
 
-## type [K8sPing](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L164-L179>)
+## type [K8sPing](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L164-L175>)
 
 K8sPing is a conntivity check that will try to connect to all Pods matching the selector
 
@@ -240,10 +240,6 @@ type K8sPing struct {
     Protocol string `mapstructure:"protocol,omitempty"`
     // Port to ping
     Port int `mapstructure:"port,omitempty"`
-    // UsePodIP set to true to use the pod IP address instead of its name.namespace
-    UsePodIP bool `mapstructure:"usePodIP,omitempty"`
-    // ClusterDomain defaults to cluster.local
-    ClusterDomain string `mapstructure:"clusterDomain,omitempty"`
     BaseCheck
 }
 ```
