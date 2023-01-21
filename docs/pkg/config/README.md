@@ -62,7 +62,7 @@ type Config struct {
 
 ## type [ConnCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L132-L144>)
 
-ConnCheck configures a conntivity check
+ConnCheck configures a connectivity check
 
 ```go
 type ConnCheck struct {
@@ -229,7 +229,7 @@ func (c K8sCheck) Equal(other K8sCheck) bool
 
 ## type [K8sPing](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L165-L176>)
 
-K8sPing is a conntivity check that will try to connect to all Pods matching the selector
+K8sPing is a connectivity check that will try to connect to all Pods matching the selector
 
 ```go
 type K8sPing struct {

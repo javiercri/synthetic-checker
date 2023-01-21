@@ -128,7 +128,7 @@ type DNSCheck struct {
 	BaseCheck
 }
 
-// ConnCheck configures a conntivity check
+// ConnCheck configures a connectivity check
 type ConnCheck struct {
 	// Address is the IP address or host and port to ping
 	// see the net.Dial docs for details
@@ -161,7 +161,7 @@ type K8sCheck struct {
 	BaseCheck
 }
 
-// K8sPing is a conntivity check that will try to connect to all Pods matching the selector
+// K8sPing is a connectivity check that will try to connect to all Pods matching the selector
 type K8sPing struct {
 	// Namespace is the namespace where to look for the resource
 	Namespace string `mapstructure:"namespace,omitempty"`
