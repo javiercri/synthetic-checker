@@ -18,9 +18,9 @@ require (
 	github.com/subosito/gotenv v1.4.2
 	golang.org/x/exp v0.0.0-20221227203929-1b447090c38c
 	google.golang.org/grpc v1.52.0
-	k8s.io/api v0.26.0
-	k8s.io/apimachinery v0.26.0
-	k8s.io/client-go v0.26.0
+	k8s.io/api v0.26.1
+	k8s.io/apimachinery v0.26.1
+	k8s.io/client-go v0.26.1
 	sigs.k8s.io/cli-utils v0.34.0
 	sigs.k8s.io/controller-runtime v0.14.1
 	sigs.k8s.io/yaml v1.3.0
