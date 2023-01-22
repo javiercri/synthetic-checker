@@ -298,7 +298,7 @@ func (r *Runner) schedule(ctx context.Context, name string) {
 				r.log.Info().Str("name", name).Msg("stopping checks")
 				return
 			case <-r.stop[name]:
-				r.log.Info().Str("name", name).Msg("got quit signal stopping checks")
+				r.log.Info().Str("name", name).Msg("got quit signal, stopping checks")
 				return
 			}
 		}
@@ -318,6 +318,7 @@ func (r *Runner) Stop() {
 }
 
 // Syncer returns a sync function that fetches the state from the leader
+// and sets up the followers as informers to the leader
 func (r *Runner) Syncer(selfID string, useSSL bool, port int) func(string) {
 	protocol := "http"
 	if useSSL {
@@ -334,19 +335,28 @@ func (r *Runner) Syncer(selfID string, useSSL bool, port int) func(string) {
 	selfURL := fmt.Sprintf("%s://%s:%d/", protocol, selfID, port)
 	return func(leader string) {
 		leader = fmt.Sprintf("%s://%s:%d/", protocol, leader, port)
-		if leader != selfURL {
-			r.informOnly = true
-			r.informer.AddUpstream(config.Upstream{URL: leader})
-		} else if !starttedAsInformer {
-			r.informOnly = false
-		}
-		if r.leader != "" && r.leader != leader {
-			r.informer.RemoveUpstream(r.leader)
-			if r.informOnly {
+		if r.leader != leader {
+			// the leader has changed so remove the old one from the list of upstreams
+			if r.leader != "" {
+				r.informer.RemoveUpstream(r.leader)
+			}
+			// ensure the new leader has all the checks
+			if leader != selfURL {
 				r.RefreshUpstreams()
 			}
 		}
+		// store the ID of the new leader
 		r.leader = leader
+		if leader != selfURL {
+			// not the leader so act as an informer only
+			r.informOnly = true
+			// ensure the leader is set as an upstream
+			r.informer.AddUpstream(config.Upstream{URL: leader})
+		} else {
+			// the leader should return to the original configuration
+			r.informOnly = starttedAsInformer
+			return
+		}
 		err := r.sync(leader)
 		r.log.Err(err).Msg("syncing data from leader")
 	}

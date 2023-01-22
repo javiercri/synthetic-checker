@@ -59,7 +59,7 @@ func (r *Runner) AddFromConfig(cfg config.Config, start bool) error
 
 AddFromConfig loads the checks from the given configuration
 
-### func \(\*Runner\) [Check](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/checker/checker.go#L373>)
+### func \(\*Runner\) [Check](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/checker/checker.go#L383>)
 
 ```go
 func (r *Runner) Check(ctx context.Context)
@@ -121,19 +121,19 @@ func (r *Runner) Stop()
 
 Stop stops all checks
 
-### func \(\*Runner\) [Summary](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/checker/checker.go#L386>)
+### func \(\*Runner\) [Summary](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/checker/checker.go#L396>)
 
 ```go
 func (r *Runner) Summary() (allFailed, anyFailed bool)
 ```
 
-### func \(\*Runner\) [Syncer](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/checker/checker.go#L321>)
+### func \(\*Runner\) [Syncer](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/checker/checker.go#L322>)
 
 ```go
 func (r *Runner) Syncer(selfID string, useSSL bool, port int) func(string)
 ```
 
-Syncer returns a sync function that fetches the state from the leader
+Syncer returns a sync function that fetches the state from the leader and sets up the followers as informers to the leader
 
 
 
