@@ -82,7 +82,7 @@ func New(cfg *config.Config) *cobra.Command {
 	cmd.Flags().IntVarP(&opts.failStatus, "failed-status-code", "F", http.StatusOK, "HTTP status code to return when all checks are failed")
 	cmd.Flags().IntVarP(&opts.degradedStatus, "degraded-status-code", "D", http.StatusOK, "HTTP status code to return when check check is failed")
 	cmd.Flags().BoolVarP(&opts.haMode, "k8s-leader-election", "", false, "Enable leader election, only works when running in k8s")
-	cmd.Flags().StringVarP(&opts.leID, "leader-election-id", "", "", "set the leader election ID, defaults to POD_NAME or hostname")
+	cmd.Flags().StringVarP(&opts.leID, "leader-election-id", "", "", "set the leader election ID, defaults to the pod IP or hostname")
 	cmd.Flags().StringVarP(&opts.leNs, "leader-election-ns", "", "", "set the leader election namespace, defaults to the current namespace")
 	cmd.Flags().BoolVarP(&opts.watchIngresses, "watch-ingresses", "w", false, "Automatically setup checks for k8s ingresses, only works when running in k8s")
 

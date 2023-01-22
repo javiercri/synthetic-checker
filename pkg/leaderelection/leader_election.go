@@ -2,7 +2,6 @@ package leaderelection
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"time"
 
@@ -21,21 +20,11 @@ const (
 	lockName               = "synthetic-checker"
 )
 
-func getInClusterNamespace() (string, error) {
-	// Check whether the namespace file exists.
-	// If not, we are not running in cluster so can't guess the namespace.
-	if _, err := os.Stat(inClusterNamespacePath); os.IsNotExist(err) {
-		return "", fmt.Errorf("not running in-cluster, please specify LeaderElectionNamespace")
-	} else if err != nil {
-		return "", fmt.Errorf("error checking namespace file: %w", err)
-	}
-
-	// Load the namespace file and return its content
-	namespace, err := os.ReadFile(inClusterNamespacePath)
-	if err != nil {
-		return "", fmt.Errorf("error reading namespace file: %w", err)
-	}
-	return string(namespace), nil
+type LeaderElector struct {
+	ID     string
+	Leader string
+	lock   resourcelock.Interface
+	logger zerolog.Logger
 }
 
 func newResourceLock(id, namespace string) (resourcelock.Interface, error) {
@@ -65,16 +54,16 @@ func newResourceLock(id, namespace string) (resourcelock.Interface, error) {
 		})
 }
 
-type LeaderElector struct {
-	ID     string
-	Leader string
-	lock   resourcelock.Interface
-	logger zerolog.Logger
-}
-
 func NewLeaderElector(id, namespace string) (*LeaderElector, error) {
 	logLevel := zerolog.InfoLevel
 	logger := zerolog.New(os.Stderr).With().Timestamp().Str("name", "leaderElector").Logger().Level(logLevel)
+
+	if id == "" {
+		id = os.Getenv("POD_IP")
+	}
+	if id == "" {
+		id, _ = getOutboundIP()
+	}
 	if id == "" {
 		id = os.Getenv("POD_NAME")
 	}
@@ -85,6 +74,7 @@ func NewLeaderElector(id, namespace string) (*LeaderElector, error) {
 			return nil, err
 		}
 	}
+
 	if namespace == "" {
 		var err error
 		namespace, err = getInClusterNamespace()

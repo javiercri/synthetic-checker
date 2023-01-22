@@ -13,7 +13,7 @@ import "github.com/luisdavim/synthetic-checker/pkg/leaderelection"
   - [func (l *LeaderElector) RunLeaderElection(ctx context.Context, run func(context.Context), sync func(leader string), stop func())](<#func-leaderelector-runleaderelection>)
 
 
-## type [LeaderElector](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/leaderelection/leader_election.go#L68-L73>)
+## type [LeaderElector](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/leaderelection/leader_election.go#L23-L28>)
 
 ```go
 type LeaderElector struct {
@@ -23,13 +23,13 @@ type LeaderElector struct {
 }
 ```
 
-### func [NewLeaderElector](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/leaderelection/leader_election.go#L75>)
+### func [NewLeaderElector](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/leaderelection/leader_election.go#L57>)
 
 ```go
 func NewLeaderElector(id, namespace string) (*LeaderElector, error)
 ```
 
-### func \(\*LeaderElector\) [RunLeaderElection](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/leaderelection/leader_election.go#L107>)
+### func \(\*LeaderElector\) [RunLeaderElection](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/leaderelection/leader_election.go#L97>)
 
 ```go
 func (l *LeaderElector) RunLeaderElection(ctx context.Context, run func(context.Context), sync func(leader string), stop func())
