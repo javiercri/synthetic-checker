@@ -35,9 +35,9 @@ in another cluster or VM, that will actually run the checks, generating metrics 
 ```mermaid
 graph LR;
 
- checker[Checker]-->|test|ingress[Ingress];
+ checker[Checker]-->|test|lb[LoadBalancer];
+ lb-->ingress
  informer[Informer]-->|config|checker;
-
 
  subgraph MGMT cluster
   checker;
@@ -54,7 +54,7 @@ graph LR;
  classDef k8s fill:#326ce5,stroke:#fff,stroke-width:4px,color:#fff;
  classDef cluster fill:#fff,stroke:#bbb,stroke-width:2px,color:#326ce5;
  class checker,informer,ingress,service,pod1,pod2 k8s;
- class client plain;
+ class lb plain;
  class cluster cluster;
 ```
 
