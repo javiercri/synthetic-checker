@@ -21,20 +21,8 @@ import (
 	"github.com/luisdavim/synthetic-checker/pkg/checker"
 	"github.com/luisdavim/synthetic-checker/pkg/checks"
 	"github.com/luisdavim/synthetic-checker/pkg/config"
+	"github.com/luisdavim/synthetic-checker/pkg/watcher/consts"
 	"github.com/luisdavim/synthetic-checker/pkg/watcher/filter"
-)
-
-const (
-	defaultLBPort        = ":443"
-	annotationPrefix     = "synthetic-checker"
-	finalizerName        = annotationPrefix + "/finalizer"
-	skipAnnotation       = annotationPrefix + "/skip"
-	tlsAnnotation        = annotationPrefix + "/TLS"
-	noTLSAnnotation      = annotationPrefix + "/noTLS"
-	portsAnnotation      = annotationPrefix + "/ports"
-	intervalAnnotation   = annotationPrefix + "/interval"
-	endpointsAnnotation  = annotationPrefix + "/endpoints"
-	configFromAnnotation = annotationPrefix + "/configFrom"
 )
 
 // TODO: allow the user to extend this list
@@ -64,7 +52,7 @@ func (r *Reconciler) SetupWithManager(mgr ctrl.Manager, ps []predicate.Predicate
 // predicates will filter events for ingresses that haven't changed
 // or are annotated to be skipped
 func predicates(ps []predicate.Predicate) predicate.Predicate {
-	ps = append(ps, predicate.Or(predicate.GenerationChangedPredicate{}, predicate.AnnotationChangedPredicate{}), filter.SkipAnnotation(skipAnnotation))
+	ps = append(ps, predicate.Or(predicate.GenerationChangedPredicate{}, predicate.AnnotationChangedPredicate{}), filter.SkipAnnotation(consts.SkipAnnotation))
 
 	return predicate.And(ps...)
 }
@@ -84,7 +72,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 
 	if !ingress.DeletionTimestamp.IsZero() {
 		// The object is being deleted
-		if controllerutil.ContainsFinalizer(ingress, finalizerName) {
+		if controllerutil.ContainsFinalizer(ingress, consts.FinalizerName) {
 			if err := r.cleanup(ingress); err != nil {
 				log.Error(err, "failed to cleanup checks for ingress")
 				return ctrl.Result{}, err
@@ -100,8 +88,8 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 		return ctrl.Result{}, err
 	}
 
-	if !controllerutil.ContainsFinalizer(ingress, finalizerName) {
-		controllerutil.AddFinalizer(ingress, finalizerName)
+	if !controllerutil.ContainsFinalizer(ingress, consts.FinalizerName) {
+		controllerutil.AddFinalizer(ingress, consts.FinalizerName)
 		if err := r.Update(ctx, ingress); err != nil {
 			log.Error(err, "failed to add finalizer")
 			return ctrl.Result{}, err
@@ -120,7 +108,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 }
 
 func (r *Reconciler) needsCleanUp(ingress *netv1.Ingress) bool {
-	if v, ok := ingress.Annotations[skipAnnotation]; ok {
+	if v, ok := ingress.Annotations[consts.SkipAnnotation]; ok {
 		// skip annotation was added or changed from false to true
 		if skip, _ := strconv.ParseBool(v); skip {
 			return true
@@ -141,7 +129,7 @@ func (r *Reconciler) needsCleanUp(ingress *netv1.Ingress) bool {
 func (r *Reconciler) setup(ingress *netv1.Ingress) error {
 	var interval metav1.Duration
 
-	if i, ok := ingress.Annotations[intervalAnnotation]; ok {
+	if i, ok := ingress.Annotations[consts.IntervalAnnotation]; ok {
 		d, _ := time.ParseDuration(i)
 		interval.Duration = d
 	}
@@ -156,8 +144,8 @@ func (r *Reconciler) setup(ingress *netv1.Ingress) error {
 
 	// setup connection checks for all ingress LBs
 	lbs := getLBs(ingress)
-	tls, _ := strconv.ParseBool(ingress.Annotations[tlsAnnotation])
-	noTLS, _ := strconv.ParseBool(ingress.Annotations[noTLSAnnotation])
+	tls, _ := strconv.ParseBool(ingress.Annotations[consts.TlsAnnotation])
+	noTLS, _ := strconv.ParseBool(ingress.Annotations[consts.NoTLSAnnotation])
 	if err := r.setConnChecks(lbs, ports, hosts, tls, noTLS, interval); err != nil {
 		return err
 	}
@@ -281,7 +269,7 @@ func (r *Reconciler) setHTTPChecks(hosts, ports, endpoints []string, cfg config.
 
 func (r *Reconciler) getHTTPConfig(ingress *netv1.Ingress) (config.HTTPCheck, error) {
 	var cfg config.HTTPCheck
-	if s, ok := ingress.Annotations[configFromAnnotation]; ok {
+	if s, ok := ingress.Annotations[consts.ConfigFromAnnotation]; ok {
 		secret := corev1.Secret{}
 		if err := r.Get(context.Background(), types.NamespacedName{Namespace: ingress.Namespace, Name: s}, &secret); err != nil {
 			return cfg, err
@@ -314,8 +302,8 @@ func (r *Reconciler) cleanup(ingress *netv1.Ingress) error {
 	}
 
 	// cleanup connection checks
-	tls, _ := strconv.ParseBool(ingress.Annotations[tlsAnnotation])
-	noTLS, _ := strconv.ParseBool(ingress.Annotations[noTLSAnnotation])
+	tls, _ := strconv.ParseBool(ingress.Annotations[consts.TlsAnnotation])
+	noTLS, _ := strconv.ParseBool(ingress.Annotations[consts.NoTLSAnnotation])
 
 	for _, lb := range getLBs(ingress) {
 		for _, port := range ports {
@@ -344,7 +332,7 @@ func (r *Reconciler) cleanup(ingress *netv1.Ingress) error {
 	}
 
 	// we won't be tracking this resource anymore
-	controllerutil.RemoveFinalizer(ingress, finalizerName)
+	controllerutil.RemoveFinalizer(ingress, consts.FinalizerName)
 	if err := r.Update(context.Background(), ingress); err != nil {
 		return fmt.Errorf("failed to remove finalizer: %w", err)
 	}
@@ -354,7 +342,7 @@ func (r *Reconciler) cleanup(ingress *netv1.Ingress) error {
 
 func getEndpoints(ingress *netv1.Ingress) []string {
 	var endpoints []string
-	if e, ok := ingress.Annotations[endpointsAnnotation]; ok {
+	if e, ok := ingress.Annotations[consts.EndpointsAnnotation]; ok {
 		for _, endpoint := range strings.Split(e, ",") {
 			endpoint = strings.TrimSpace(endpoint)
 			if endpoint != "" {
@@ -372,7 +360,7 @@ func getEndpoints(ingress *netv1.Ingress) []string {
 // getPorts returns the list of ports to check by inspectin the resource's annotations
 func getPorts(ingress *netv1.Ingress) []string {
 	var ports []string
-	if ps, ok := ingress.Annotations[portsAnnotation]; ok {
+	if ps, ok := ingress.Annotations[consts.PortsAnnotation]; ok {
 		for _, port := range strings.Split(ps, ",") {
 			port = strings.TrimSpace(port)
 			if port == "" {
@@ -385,7 +373,7 @@ func getPorts(ingress *netv1.Ingress) []string {
 		}
 	}
 	if len(ports) == 0 {
-		ports = append(ports, defaultLBPort)
+		ports = append(ports, consts.DefaultLBPort)
 	}
 
 	return ports

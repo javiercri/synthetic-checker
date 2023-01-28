@@ -3,6 +3,8 @@ package ingress
 import (
 	"testing"
 
+	"github.com/luisdavim/synthetic-checker/pkg/watcher/consts"
+
 	netv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -22,7 +24,7 @@ func TestPredicates(t *testing.T) {
 			ObjectOld: &netv1.Ingress{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						skipAnnotation: "false",
+						consts.SkipAnnotation: "false",
 					},
 				},
 			},
@@ -35,7 +37,7 @@ func TestPredicates(t *testing.T) {
 			ObjectNew: &netv1.Ingress{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						skipAnnotation: "false",
+						consts.SkipAnnotation: "false",
 					},
 				},
 			},
@@ -53,7 +55,7 @@ func TestPredicates(t *testing.T) {
 			ObjectNew: &netv1.Ingress{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						skipAnnotation: "true",
+						consts.SkipAnnotation: "true",
 					},
 				},
 			},
@@ -64,14 +66,14 @@ func TestPredicates(t *testing.T) {
 			ObjectOld: &netv1.Ingress{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						skipAnnotation: "true",
+						consts.SkipAnnotation: "true",
 					},
 				},
 			},
 			ObjectNew: &netv1.Ingress{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						skipAnnotation: "true",
+						consts.SkipAnnotation: "true",
 					},
 				},
 			},
@@ -82,14 +84,14 @@ func TestPredicates(t *testing.T) {
 			ObjectOld: &netv1.Ingress{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						skipAnnotation: "false",
+						consts.SkipAnnotation: "false",
 					},
 				},
 			},
 			ObjectNew: &netv1.Ingress{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						skipAnnotation: "true",
+						consts.SkipAnnotation: "true",
 					},
 				},
 			},
@@ -100,14 +102,14 @@ func TestPredicates(t *testing.T) {
 			ObjectOld: &netv1.Ingress{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						skipAnnotation: "true",
+						consts.SkipAnnotation: "true",
 					},
 				},
 			},
 			ObjectNew: &netv1.Ingress{
 				ObjectMeta: metav1.ObjectMeta{
 					Annotations: map[string]string{
-						skipAnnotation: "false",
+						consts.SkipAnnotation: "false",
 					},
 				},
 			},
@@ -135,7 +137,7 @@ func TestPredicates(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Generation: 1,
 					Annotations: map[string]string{
-						skipAnnotation: "true",
+						consts.SkipAnnotation: "true",
 					},
 				},
 			},
@@ -143,7 +145,7 @@ func TestPredicates(t *testing.T) {
 				ObjectMeta: metav1.ObjectMeta{
 					Generation: 2,
 					Annotations: map[string]string{
-						skipAnnotation: "true",
+						consts.SkipAnnotation: "true",
 					},
 				},
 			},
