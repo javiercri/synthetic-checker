@@ -3,7 +3,7 @@
 # filter
 
 ```go
-import "github.com/luisdavim/synthetic-checker/pkg/ingresswatcher/filter"
+import "github.com/luisdavim/synthetic-checker/pkg/watcher/filter"
 ```
 
 ## Index
@@ -13,7 +13,7 @@ import "github.com/luisdavim/synthetic-checker/pkg/ingresswatcher/filter"
 - [func SkipAnnotation(annotation string) predicate.Predicate](<#func-skipannotation>)
 
 
-## func [ByLabel](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/ingresswatcher/filter/filter.go#L42>)
+## func [ByLabel](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/watcher/filter/filter.go#L42>)
 
 ```go
 func ByLabel(label string) predicate.Predicate
@@ -21,7 +21,7 @@ func ByLabel(label string) predicate.Predicate
 
 ByLabel wiil exclude objects that don't have the required label
 
-## func [ByNamespace](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/ingresswatcher/filter/filter.go#L71>)
+## func [ByNamespace](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/watcher/filter/filter.go#L71>)
 
 ```go
 func ByNamespace(namespaces []string) predicate.Predicate
@@ -29,7 +29,7 @@ func ByNamespace(namespaces []string) predicate.Predicate
 
 ByNamespace will filter any events from Namespaces not in the given list.
 
-## func [SkipAnnotation](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/ingresswatcher/filter/filter.go#L13>)
+## func [SkipAnnotation](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/watcher/filter/filter.go#L13>)
 
 ```go
 func SkipAnnotation(annotation string) predicate.Predicate

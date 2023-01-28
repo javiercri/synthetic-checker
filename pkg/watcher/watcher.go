@@ -1,6 +1,6 @@
 // ingresswatcher is a kubernetes controller that watches Ingress resources
 // and configures several checks for each observed ingress.
-package ingresswatcher
+package watcher
 
 import (
 	"fmt"
@@ -12,7 +12,8 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
 	"github.com/luisdavim/synthetic-checker/pkg/checker"
-	"github.com/luisdavim/synthetic-checker/pkg/ingresswatcher/filter"
+	"github.com/luisdavim/synthetic-checker/pkg/watcher/filter"
+	"github.com/luisdavim/synthetic-checker/pkg/watcher/ingress"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -94,7 +95,7 @@ func Start(chkr *checker.Runner, cfg Options) error {
 		return fmt.Errorf("unable to start manager: %w", err)
 	}
 
-	if err = (&IngressReconciler{
+	if err = (&ingress.Reconciler{
 		RequiredLabel: cfg.RequiredLabel,
 		Client:        mgr.GetClient(),
 		Scheme:        mgr.GetScheme(),

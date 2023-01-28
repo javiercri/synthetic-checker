@@ -1,4 +1,4 @@
-package ingresswatcher
+package ingress
 
 import (
 	"context"
@@ -21,7 +21,7 @@ import (
 	"github.com/luisdavim/synthetic-checker/pkg/checker"
 	"github.com/luisdavim/synthetic-checker/pkg/checks"
 	"github.com/luisdavim/synthetic-checker/pkg/config"
-	"github.com/luisdavim/synthetic-checker/pkg/ingresswatcher/filter"
+	"github.com/luisdavim/synthetic-checker/pkg/watcher/filter"
 )
 
 const (
@@ -46,15 +46,15 @@ var additionalHostsAnnotations = []string{
 	"dns.alpha.kubernetes.io/internal",
 }
 
-// IngressReconciler reconciles a Ingress object
-type IngressReconciler struct {
+// Reconciler reconciles a Ingress object
+type Reconciler struct {
 	RequiredLabel string
 	client.Client
 	Scheme  *runtime.Scheme
 	Checker *checker.Runner
 }
 
-func (r *IngressReconciler) SetupWithManager(mgr ctrl.Manager, ps []predicate.Predicate) error {
+func (r *Reconciler) SetupWithManager(mgr ctrl.Manager, ps []predicate.Predicate) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&netv1.Ingress{}).
 		WithEventFilter(predicates(ps)).
@@ -73,7 +73,7 @@ func predicates(ps []predicate.Predicate) predicate.Predicate {
 //+kubebuilder:rbac:groups=networking.k8s.io,resources=ingresss/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=networking.k8s.io,resources=ingresss/finalizers,verbs=update
 
-func (r *IngressReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := ctrl.Log.WithName("controller").WithValues("ingress", req.NamespacedName)
 
 	ingress := &netv1.Ingress{}
@@ -119,7 +119,7 @@ func (r *IngressReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	return ctrl.Result{RequeueAfter: time.Hour}, nil
 }
 
-func (r *IngressReconciler) needsCleanUp(ingress *netv1.Ingress) bool {
+func (r *Reconciler) needsCleanUp(ingress *netv1.Ingress) bool {
 	if v, ok := ingress.Annotations[skipAnnotation]; ok {
 		// skip annotation was added or changed from false to true
 		if skip, _ := strconv.ParseBool(v); skip {
@@ -138,7 +138,7 @@ func (r *IngressReconciler) needsCleanUp(ingress *netv1.Ingress) bool {
 	return false
 }
 
-func (r *IngressReconciler) setup(ingress *netv1.Ingress) error {
+func (r *Reconciler) setup(ingress *netv1.Ingress) error {
 	var interval metav1.Duration
 
 	if i, ok := ingress.Annotations[intervalAnnotation]; ok {
@@ -175,7 +175,7 @@ func (r *IngressReconciler) setup(ingress *netv1.Ingress) error {
 	return nil
 }
 
-func (r *IngressReconciler) setDNSChecks(hosts, ports []string, interval metav1.Duration) error {
+func (r *Reconciler) setDNSChecks(hosts, ports []string, interval metav1.Duration) error {
 	for i, host := range hosts {
 		d := time.Duration(i) + 1*time.Second
 		check, err := checks.NewDNSCheck(host,
@@ -195,7 +195,7 @@ func (r *IngressReconciler) setDNSChecks(hosts, ports []string, interval metav1.
 	return nil
 }
 
-func (r *IngressReconciler) setConnChecks(lbs, ports, hosts []string, tls, noTLS bool, interval metav1.Duration) error {
+func (r *Reconciler) setConnChecks(lbs, ports, hosts []string, tls, noTLS bool, interval metav1.Duration) error {
 	for i, lb := range lbs {
 		d := time.Duration(i) + 1*time.Second
 		for _, port := range ports {
@@ -238,7 +238,7 @@ func (r *IngressReconciler) setConnChecks(lbs, ports, hosts []string, tls, noTLS
 	return nil
 }
 
-func (r *IngressReconciler) setHTTPChecks(hosts, ports, endpoints []string, cfg config.HTTPCheck, interval metav1.Duration) error {
+func (r *Reconciler) setHTTPChecks(hosts, ports, endpoints []string, cfg config.HTTPCheck, interval metav1.Duration) error {
 	if len(endpoints) == 0 {
 		if cfg.Headers != nil || cfg.Body != "" || cfg.Method != "" {
 			endpoints = append(endpoints, "")
@@ -279,7 +279,7 @@ func (r *IngressReconciler) setHTTPChecks(hosts, ports, endpoints []string, cfg 
 	return nil
 }
 
-func (r *IngressReconciler) getHTTPConfig(ingress *netv1.Ingress) (config.HTTPCheck, error) {
+func (r *Reconciler) getHTTPConfig(ingress *netv1.Ingress) (config.HTTPCheck, error) {
 	var cfg config.HTTPCheck
 	if s, ok := ingress.Annotations[configFromAnnotation]; ok {
 		secret := corev1.Secret{}
@@ -303,7 +303,7 @@ func (r *IngressReconciler) getHTTPConfig(ingress *netv1.Ingress) (config.HTTPCh
 	return cfg, nil
 }
 
-func (r *IngressReconciler) cleanup(ingress *netv1.Ingress) error {
+func (r *Reconciler) cleanup(ingress *netv1.Ingress) error {
 	hosts := getHosts(ingress)
 	ports := getPorts(ingress)
 

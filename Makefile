@@ -46,6 +46,9 @@ YELLOW := $(shell tput -Txterm setaf 3)
 WHITE  := $(shell tput -Txterm setaf 7)
 CYAN   := $(shell tput -Txterm setaf 6)
 RESET  := $(shell tput -Txterm sgr0)
+DOT   := .
+DASH  := -
+SLASH := /
 
 .PHONY: all test fmt vet build vendor deps update-deps imports release tag docs
 
@@ -221,15 +224,16 @@ docker-release: ## Release the container with tag latest and version
 	docker push $(DOCKER_REGISTRY)$(BINARY_NAME):$(VERSION)
 
 ## Documentation:
-docs: fmt usagedoc gomarkdoc-pkg gomarkdoc-cmd helm-docs ## Generate project documentation
+docs: fmt usagedoc gomarkdoc-pkg gomarkdoc-pkg-watcher gomarkdoc-cmd helm-docs ## Generate project documentation
 	rm -rf docs
 	mkdir -p docs
 	gomarkdoc --output 'docs/{{.Dir}}/README.md' ./...
 	@echo -e '\n## Packages\n' >> docs/README.md; for d in $$(find ./docs -type f -name '*.md' | sort); do path="$${d##./docs/}"; name="$${path%/*}"; echo "- [$${name/README.md/$(PROJECTNAME)}]($${path})" >> docs/README.md; done
 
 gomarkdoc-%: ## Use gomarkdoc to generate documentation for packages in the % folder
-	[ ! -d "$(*)" ] || for d in $(*)/*/; do gomarkdoc --output "$${d}README.md" "$(REPO)/$${d%/*}"; done
-	@echo -e '# Packages\n' > $(*)/README.md; for d in $$(find ./$(*)/ -type f -name '*.md' | sort); do path="$${d##./$(*)/}"; name="$${path%/*}"; echo "- [$${name/README.md/$(PROJECTNAME)}]($${path})" >> $(*)/README.md; done
+	$(eval PKG := $(subst $(DASH),$(SLASH),$(*)))
+	[ ! -d "$(PKG)" ] || for d in $(PKG)/*/; do gomarkdoc --output "$${d}README.md" "$(REPO)/$${d%/*}"; done
+	@echo -e '# Packages\n' > $(PKG)/README.md; for d in $$(find ./$(PKG)/ -type f -name '*.md' | sort); do path="$${d##./$(PKG)/}"; name="$${path%/*}"; echo "- [$${name/README.md/$(PROJECTNAME)}]($${path})" >> $(PKG)/README.md; done
 
 gomarkdoc: ## Use gomarkdoc to generate documentation for the whole project
 	gomarkdoc --output '{{.Dir}}/README.md' ./...

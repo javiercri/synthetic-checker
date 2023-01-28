@@ -14,9 +14,9 @@ import (
 	"github.com/luisdavim/synthetic-checker/pkg/checker"
 	"github.com/luisdavim/synthetic-checker/pkg/checksapi"
 	"github.com/luisdavim/synthetic-checker/pkg/config"
-	"github.com/luisdavim/synthetic-checker/pkg/ingresswatcher"
 	"github.com/luisdavim/synthetic-checker/pkg/leaderelection"
 	"github.com/luisdavim/synthetic-checker/pkg/server"
+	"github.com/luisdavim/synthetic-checker/pkg/watcher"
 )
 
 type options struct {
@@ -32,7 +32,7 @@ type options struct {
 func New(cfg *config.Config) *cobra.Command {
 	var (
 		opts  options
-		wOpts ingresswatcher.Options
+		wOpts watcher.Options
 	)
 	// cmd represents the base command when called without any subcommands
 	cmd := &cobra.Command{
@@ -75,7 +75,7 @@ func New(cfg *config.Config) *cobra.Command {
 					func(ctx context.Context) {
 						chkr.Run(ctx)
 						if opts.watchIngresses {
-							ingresswatcher.StartBackground(chkr, wOpts)
+							watcher.StartBackground(chkr, wOpts)
 						}
 						<-ctx.Done() // hold the routine, Run goes into the background
 					},
@@ -88,7 +88,7 @@ func New(cfg *config.Config) *cobra.Command {
 			} else {
 				chkr.Run(context.Background())
 				if opts.watchIngresses {
-					ingresswatcher.StartBackground(chkr, wOpts)
+					watcher.StartBackground(chkr, wOpts)
 				}
 			}
 

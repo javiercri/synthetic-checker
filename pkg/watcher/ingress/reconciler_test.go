@@ -1,4 +1,4 @@
-package ingresswatcher
+package ingress
 
 import (
 	"testing"
