@@ -10,47 +10,61 @@ ingresswatcher is a kubernetes controller that watches Ingress resources and con
 
 ## Index
 
-- [func Start(chkr *checker.Runner, metricsAddr, probeAddr string, enableLeaderElection bool) error](<#func-start>)
-- [func StartBackground(chkr *checker.Runner, metricsAddr, probeAddr string, enableLeaderElection bool)](<#func-startbackground>)
+- [func Start(chkr *checker.Runner, cfg Options) error](<#func-start>)
+- [func StartBackground(chkr *checker.Runner, cfg Options)](<#func-startbackground>)
 - [type IngressReconciler](<#type-ingressreconciler>)
   - [func (r *IngressReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error)](<#func-ingressreconciler-reconcile>)
-  - [func (r *IngressReconciler) SetupWithManager(mgr ctrl.Manager) error](<#func-ingressreconciler-setupwithmanager>)
+  - [func (r *IngressReconciler) SetupWithManager(mgr ctrl.Manager, ps []predicate.Predicate) error](<#func-ingressreconciler-setupwithmanager>)
+- [type Options](<#type-options>)
 
 
-## func [Start](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/ingresswatcher/ingresswatcher.go#L43>)
-
-```go
-func Start(chkr *checker.Runner, metricsAddr, probeAddr string, enableLeaderElection bool) error
-```
-
-## func [StartBackground](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/ingresswatcher/ingresswatcher.go#L34>)
+## func [Start](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/ingresswatcher/ingresswatcher.go#L56>)
 
 ```go
-func StartBackground(chkr *checker.Runner, metricsAddr, probeAddr string, enableLeaderElection bool)
+func Start(chkr *checker.Runner, cfg Options) error
 ```
 
-## type [IngressReconciler](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/ingresswatcher/reconciler.go#L49-L53>)
+## func [StartBackground](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/ingresswatcher/ingresswatcher.go#L47>)
+
+```go
+func StartBackground(chkr *checker.Runner, cfg Options)
+```
+
+## type [IngressReconciler](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/ingresswatcher/reconciler.go#L50-L55>)
 
 IngressReconciler reconciles a Ingress object
 
 ```go
 type IngressReconciler struct {
+    RequiredLabel string
     client.Client
     Scheme  *runtime.Scheme
     Checker *checker.Runner
 }
 ```
 
-### func \(\*IngressReconciler\) [Reconcile](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/ingresswatcher/reconciler.go#L99>)
+### func \(\*IngressReconciler\) [Reconcile](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/ingresswatcher/reconciler.go#L76>)
 
 ```go
 func (r *IngressReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error)
 ```
 
-### func \(\*IngressReconciler\) [SetupWithManager](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/ingresswatcher/reconciler.go#L55>)
+### func \(\*IngressReconciler\) [SetupWithManager](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/ingresswatcher/reconciler.go#L57>)
 
 ```go
-func (r *IngressReconciler) SetupWithManager(mgr ctrl.Manager) error
+func (r *IngressReconciler) SetupWithManager(mgr ctrl.Manager, ps []predicate.Predicate) error
+```
+
+## type [Options](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/ingresswatcher/ingresswatcher.go#L33-L39>)
+
+```go
+type Options struct {
+    Namespaces           string
+    RequiredLabel        string
+    MetricsAddr          string
+    ProbeAddr            string
+    EnableLeaderElection bool
+}
 ```
 
 

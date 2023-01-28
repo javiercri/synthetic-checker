@@ -2,6 +2,7 @@ package ingresswatcher
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -14,13 +15,13 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	"github.com/luisdavim/synthetic-checker/pkg/api"
 	"github.com/luisdavim/synthetic-checker/pkg/checker"
 	"github.com/luisdavim/synthetic-checker/pkg/checks"
 	"github.com/luisdavim/synthetic-checker/pkg/config"
+	"github.com/luisdavim/synthetic-checker/pkg/ingresswatcher/filter"
 )
 
 const (
@@ -47,49 +48,25 @@ var additionalHostsAnnotations = []string{
 
 // IngressReconciler reconciles a Ingress object
 type IngressReconciler struct {
+	RequiredLabel string
 	client.Client
 	Scheme  *runtime.Scheme
 	Checker *checker.Runner
 }
 
-func (r *IngressReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *IngressReconciler) SetupWithManager(mgr ctrl.Manager, ps []predicate.Predicate) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&netv1.Ingress{}).
-		WithEventFilter(predicates()).
+		WithEventFilter(predicates(ps)).
 		Complete(r)
 }
 
 // predicates will filter events for ingresses that haven't changed
 // or are annotated to be skipped
-func predicates() predicate.Predicate {
-	p := predicate.Funcs{
-		CreateFunc: func(e event.CreateEvent) bool {
-			annotations := e.Object.GetAnnotations()
-			skip, _ := strconv.ParseBool(annotations[skipAnnotation])
-			return !skip
-		},
-		UpdateFunc: func(e event.UpdateEvent) bool {
-			newAnnotations := e.ObjectNew.GetAnnotations()
-			skip, _ := strconv.ParseBool(newAnnotations[skipAnnotation])
-			if !skip {
-				return true
-			}
-			oldAnnotations := e.ObjectOld.GetAnnotations()
-			if s, _ := strconv.ParseBool(oldAnnotations[skipAnnotation]); !s {
-				// cleanup needed
-				return true
-			}
-			return !skip
-		},
-		DeleteFunc: func(e event.DeleteEvent) bool {
-			return true
-		},
-		GenericFunc: func(e event.GenericEvent) bool {
-			return true
-		},
-	}
+func predicates(ps []predicate.Predicate) predicate.Predicate {
+	ps = append(ps, predicate.Or(predicate.GenerationChangedPredicate{}, predicate.AnnotationChangedPredicate{}), filter.SkipAnnotation(skipAnnotation))
 
-	return predicate.And(predicate.Or(predicate.GenerationChangedPredicate{}, predicate.AnnotationChangedPredicate{}), p)
+	return predicate.And(ps...)
 }
 
 //+kubebuilder:rbac:groups=networking.k8s.io,resources=ingresss,verbs=get;list;watch;create;update;patch;delete
@@ -105,38 +82,32 @@ func (r *IngressReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
 
-	if ingress.DeletionTimestamp.IsZero() {
-		if !controllerutil.ContainsFinalizer(ingress, finalizerName) {
-			controllerutil.AddFinalizer(ingress, finalizerName)
-			if err := r.Update(ctx, ingress); err != nil {
-				log.Error(err, "failed to add finalizer")
-				return ctrl.Result{}, err
-			}
-			// no need to exit here the predicates will filter the finalizer update event
-			// return ctrl.Result{RequeueAfter: time.Second}, nil
-		}
-	} else {
+	if !ingress.DeletionTimestamp.IsZero() {
 		// The object is being deleted
 		if controllerutil.ContainsFinalizer(ingress, finalizerName) {
 			if err := r.cleanup(ingress); err != nil {
 				log.Error(err, "failed to cleanup checks for ingress")
 				return ctrl.Result{}, err
 			}
-			controllerutil.RemoveFinalizer(ingress, finalizerName)
-			if err := r.Update(ctx, ingress); err != nil {
-				log.Error(err, "failed to remove finalizer")
-				return ctrl.Result{}, err
-			}
 		}
 		return ctrl.Result{}, nil
 	}
 
-	if v, ok := ingress.Annotations[skipAnnotation]; ok {
-		// skip annotation was added or changed from false to true
-		if skip, _ := strconv.ParseBool(v); skip {
-			err := r.cleanup(ingress)
+	if r.needsCleanUp(ingress) {
+		// the skip annotation was added or changed from false to true
+		// or the required was removed or set to false
+		err := r.cleanup(ingress)
+		return ctrl.Result{}, err
+	}
+
+	if !controllerutil.ContainsFinalizer(ingress, finalizerName) {
+		controllerutil.AddFinalizer(ingress, finalizerName)
+		if err := r.Update(ctx, ingress); err != nil {
+			log.Error(err, "failed to add finalizer")
 			return ctrl.Result{}, err
 		}
+		// no need to exit here the predicates will filter the finalizer update event
+		// return ctrl.Result{RequeueAfter: time.Second}, nil
 	}
 
 	log.Info("setting up checks for ingress")
@@ -146,6 +117,25 @@ func (r *IngressReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	return ctrl.Result{RequeueAfter: time.Hour}, nil
+}
+
+func (r *IngressReconciler) needsCleanUp(ingress *netv1.Ingress) bool {
+	if v, ok := ingress.Annotations[skipAnnotation]; ok {
+		// skip annotation was added or changed from false to true
+		if skip, _ := strconv.ParseBool(v); skip {
+			return true
+		}
+	}
+
+	// required was removed or set to false
+	v, ok := ingress.Labels[r.RequiredLabel]
+	if !ok {
+		return true
+	}
+	if inc, _ := strconv.ParseBool(v); !inc {
+		return true
+	}
+	return false
 }
 
 func (r *IngressReconciler) setup(ingress *netv1.Ingress) error {
@@ -351,6 +341,12 @@ func (r *IngressReconciler) cleanup(ingress *netv1.Ingress) error {
 				r.Checker.DelCheck(name)
 			}
 		}
+	}
+
+	// we won't be tracking this resource anymore
+	controllerutil.RemoveFinalizer(ingress, finalizerName)
+	if err := r.Update(context.Background(), ingress); err != nil {
+		return fmt.Errorf("failed to remove finalizer: %w", err)
 	}
 
 	return nil

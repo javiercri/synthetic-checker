@@ -122,12 +122,14 @@ Flags:
   -h, --help                        help for serve
       --k8s-leader-election         Enable leader election, only works when running in k8s
   -K, --keyFile string              File containing the x509 private key for HTTPS.
-      --leader-election-id string   set the leader election ID, defaults to POD_NAME or hostname
+      --leader-election-id string   set the leader election ID, defaults to the pod IP or hostname
       --leader-election-ns string   set the leader election namespace, defaults to the current namespace
+  -n, --namespaces string           a comma separated list of namespaces from where to watch Ingresses
   -P, --pass string                 Set BasicAuth password for the http listener
   -p, --port int                    Port for the http listener (default 8080)
       --pretty-json                 Pretty print JSON responses
   -l, --request-limit int           Max requests per second per client allowed
+      --required-label string       ignore Ingress resources that don't have this label set to a truthful value
   -s, --securePort int              Port for the HTTPS listener (default 8443)
   -S, --strip-slashes               Strip trailing slashes befofore matching routes
   -U, --user string                 Set BasicAuth user for the http listener
@@ -260,6 +262,10 @@ stringData: # using stringData here just to make the config example more clear
   some: value # add as manay headers as needed
   Authorization: Basic YWxhZGRpbjpvcGVuc2VzYW1l # the main reason for using a secret is that you might need to set some auth headers
 ```
+
+By default the watcher works in a opt-out way, it will watch for all `Ingress` resources in all Namespces and you can exclude Ingresses by adding the `synthetic-checker/skip` annotation.
+This behaviour can be changed by setting the `--required-label` flag so the tool will ignore any resource that doesn't have that label.
+You can also pass a comma separated list of namespaces that you want to limit the watcher to.
 
 ### HA modes
 

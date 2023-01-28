@@ -26,7 +26,10 @@ type options struct {
 }
 
 func New(cfg *config.Config) *cobra.Command {
-	var opts options
+	var (
+		opts  options
+		wOpts ingresswatcher.Options
+	)
 	// cmd represents the base command when called without any subcommands
 	cmd := &cobra.Command{
 		Use:          "serve",
@@ -45,6 +48,9 @@ func New(cfg *config.Config) *cobra.Command {
 				return fmt.Errorf("error reading server config: %v", err)
 			}
 
+			wOpts.MetricsAddr = fmt.Sprintf(":%d", srvCfg.HTTP.Port+1)
+			wOpts.ProbeAddr = fmt.Sprintf(":%d", srvCfg.HTTP.Port+2)
+
 			if opts.haMode {
 				le, err := leaderelection.NewLeaderElector(opts.leID, opts.leNs)
 				if err != nil {
@@ -54,7 +60,7 @@ func New(cfg *config.Config) *cobra.Command {
 					func(ctx context.Context) {
 						chkr.Run(ctx)
 						if opts.watchIngresses {
-							ingresswatcher.StartBackground(chkr, fmt.Sprintf(":%d", srvCfg.HTTP.Port+1), fmt.Sprintf(":%d", srvCfg.HTTP.Port+2), false)
+							ingresswatcher.StartBackground(chkr, wOpts)
 						}
 						<-ctx.Done() // hold the routine, Run goes into the background
 					},
@@ -67,7 +73,7 @@ func New(cfg *config.Config) *cobra.Command {
 			} else {
 				chkr.Run(context.Background())
 				if opts.watchIngresses {
-					ingresswatcher.StartBackground(chkr, fmt.Sprintf(":%d", srvCfg.HTTP.Port+1), fmt.Sprintf(":%d", srvCfg.HTTP.Port+2), false)
+					ingresswatcher.StartBackground(chkr, wOpts)
 				}
 			}
 
@@ -85,6 +91,8 @@ func New(cfg *config.Config) *cobra.Command {
 	cmd.Flags().StringVarP(&opts.leID, "leader-election-id", "", "", "set the leader election ID, defaults to the pod IP or hostname")
 	cmd.Flags().StringVarP(&opts.leNs, "leader-election-ns", "", "", "set the leader election namespace, defaults to the current namespace")
 	cmd.Flags().BoolVarP(&opts.watchIngresses, "watch-ingresses", "w", false, "Automatically setup checks for k8s ingresses, only works when running in k8s")
+	cmd.Flags().StringVarP(&wOpts.RequiredLabel, "required-label", "", "", "ignore Ingress resources that don't have this label set to a truthful value")
+	cmd.Flags().StringVarP(&wOpts.Namespaces, "namespaces", "n", "", "a comma separated list of namespaces from where to watch Ingresses")
 
 	return cmd
 }

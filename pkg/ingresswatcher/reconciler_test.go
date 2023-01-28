@@ -151,7 +151,7 @@ func TestPredicates(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		p := predicates()
+		p := predicates(nil)
 		t.Run(tt.name, func(t *testing.T) {
 			var actual bool
 			switch {
