@@ -252,6 +252,16 @@ func (r *Runner) Run(ctx context.Context) {
 	}
 }
 
+// ReloadConfig can be called to reload the from file
+func (r *Runner) ReloadConfig(cfg config.Config, start, reset bool) error {
+	if reset {
+		for name := range r.checks {
+			r.DelCheck(name)
+		}
+	}
+	return r.AddFromConfig(cfg, start)
+}
+
 func (r *Runner) RefreshUpstreams() {
 	for name, check := range r.checks {
 		err := r.informer.Replace(check)

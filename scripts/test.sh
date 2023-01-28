@@ -75,6 +75,34 @@ if [[ "${status}" != "null" ]]; then
 fi
 echo -e "-- PASS\n"
 
+
+echo "-- TEST: Update config"
+cat << EOF > "${SERVER_CFG}"
+httpChecks:
+  stat503:
+    url: https://httpstat.us/503
+    interval: 10s
+  stat200:
+    url: https://httpstat.us/200
+    interval: 10s
+    initialDelay: 2s
+  stat204:
+    url: https://httpstat.us/204
+    expectedStatus: 204
+    interval: 10s
+    initialDelay: 2s
+EOF
+sleep 1
+status="$(curl -s "${SRV_URL}/" | jq -r '."stat204-http".ok')"
+if [[ "${status}" != "true" ]]; then
+  fail "unexpected status: $status; wanted: true"
+fi
+status="$(curl -s "${SRV_URL}/" | jq -r '."stat200-http".ok')"
+if [[ "${status}" != "true" ]]; then
+  fail "unexpected status: $status; wanted: true"
+fi
+echo -e "-- PASS\n"
+
 echo -e "\n-- INFORMER TESTs --\n"
 
 INFORMER_CFG="$(mktemp)"

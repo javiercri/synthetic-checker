@@ -3,10 +3,13 @@ package serve
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
+	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	"github.com/luisdavim/synthetic-checker/pkg/checker"
 	"github.com/luisdavim/synthetic-checker/pkg/checksapi"
@@ -23,6 +26,7 @@ type options struct {
 	watchIngresses bool
 	leID           string
 	leNs           string
+	reset          bool
 }
 
 func New(cfg *config.Config) *cobra.Command {
@@ -42,6 +46,17 @@ func New(cfg *config.Config) *cobra.Command {
 			if err != nil {
 				return err
 			}
+
+			viper.OnConfigChange(func(e fsnotify.Event) {
+				log.Println("Config file changed:", e.Name)
+				if err := viper.Unmarshal(cfg); err != nil {
+					panic(err)
+				}
+				if err := chkr.ReloadConfig(*cfg, !opts.haMode, opts.reset); err != nil {
+					panic(err)
+				}
+			})
+			viper.WatchConfig()
 
 			var srvCfg server.Config
 			if err := server.ReadConfig(&srvCfg); err != nil {
@@ -85,6 +100,7 @@ func New(cfg *config.Config) *cobra.Command {
 
 	server.Init(cmd)
 
+	cmd.Flags().BoolVarP(&opts.reset, "reset-config-on-reload", "", false, "delete all existing checks when hot-reloading the config file")
 	cmd.Flags().IntVarP(&opts.failStatus, "failed-status-code", "F", http.StatusOK, "HTTP status code to return when all checks are failed")
 	cmd.Flags().IntVarP(&opts.degradedStatus, "degraded-status-code", "D", http.StatusOK, "HTTP status code to return when check check is failed")
 	cmd.Flags().BoolVarP(&opts.haMode, "k8s-leader-election", "", false, "Enable leader election, only works when running in k8s")

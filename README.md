@@ -130,6 +130,7 @@ Flags:
       --pretty-json                 Pretty print JSON responses
   -l, --request-limit int           Max requests per second per client allowed
       --required-label string       ignore Ingress resources that don't have this label set to a truthful value
+      --reset-config-on-reload      delete all existing checks when hot-reloading the config file
   -s, --securePort int              Port for the HTTPS listener (default 8443)
   -S, --strip-slashes               Strip trailing slashes befofore matching routes
   -U, --user string                 Set BasicAuth user for the http listener
