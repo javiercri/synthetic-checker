@@ -13,7 +13,7 @@ import "github.com/luisdavim/synthetic-checker/pkg/watcher/ingress"
   - [func (r *Reconciler) SetupWithManager(mgr ctrl.Manager, ps []predicate.Predicate) error](<#func-reconciler-setupwithmanager>)
 
 
-## type [Reconciler](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/watcher/ingress/reconciler.go#L50-L55>)
+## type [Reconciler](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/watcher/ingress/reconciler.go#L38-L43>)
 
 Reconciler reconciles a Ingress object
 
@@ -26,13 +26,13 @@ type Reconciler struct {
 }
 ```
 
-### func \(\*Reconciler\) [Reconcile](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/watcher/ingress/reconciler.go#L76>)
+### func \(\*Reconciler\) [Reconcile](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/watcher/ingress/reconciler.go#L64>)
 
 ```go
 func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error)
 ```
 
-### func \(\*Reconciler\) [SetupWithManager](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/watcher/ingress/reconciler.go#L57>)
+### func \(\*Reconciler\) [SetupWithManager](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/watcher/ingress/reconciler.go#L45>)
 
 ```go
 func (r *Reconciler) SetupWithManager(mgr ctrl.Manager, ps []predicate.Predicate) error
