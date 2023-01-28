@@ -1,7 +1,23 @@
 #!/usr/bin/env bash
 
-SERVER_CFG="$(mktemp)"
-cat << EOF > "${SERVER_CFG}"
+CHECKER_CFG="$(mktemp)"
+
+cat << EOF > "${CHECKER_CFG}"
+httpChecks:
+  stat200:
+    url: https://httpstat.us/200
+    interval: 10s
+    initialDelay: 2s
+EOF
+
+echo "-- TEST: cli"
+status="$(go run main.go check -c "${CHECKER_CFG}" | jq -r '."stat200-http".ok')"
+if [[ "${status}" != "true" ]]; then
+  fail "unexpected status: $status; wanted: true"
+fi
+echo -e "-- PASS\n"
+
+cat << EOF > "${CHECKER_CFG}"
 httpChecks:
   stat503:
     url: https://httpstat.us/503
@@ -14,7 +30,7 @@ EOF
 
 SRV_URL='http://localhost:8080'
 
-(go run main.go serve -c "${SERVER_CFG}") &
+(go run main.go serve -c "${CHECKER_CFG}") &
 # SRV_PID=$!
 
 sleep 10
@@ -22,7 +38,7 @@ SRV_PID=$(lsof -tnPi TCP:8080)
 
 function fail() {
   kill "${SRV_PID}"
-  rm "${SERVER_CFG}"
+  rm "${CHECKER_CFG}"
   echo "-- FAIL: ${1}"
   exit 1
 }
@@ -77,7 +93,7 @@ echo -e "-- PASS\n"
 
 
 echo "-- TEST: Update config"
-cat << EOF > "${SERVER_CFG}"
+cat << EOF > "${CHECKER_CFG}"
 httpChecks:
   stat503:
     url: https://httpstat.us/503
@@ -148,4 +164,4 @@ echo -e "-- PASS\n"
 kill "${INFORMER_PID}"
 rm "${INFORMER_CFG}"
 kill "${SRV_PID}"
-rm "${SERVER_CFG}"
+rm "${CHECKER_CFG}"
