@@ -18,7 +18,7 @@ require (
 	github.com/spiffe/go-spiffe/v2 v2.1.2
 	github.com/subosito/gotenv v1.4.2
 	golang.org/x/exp v0.0.0-20221227203929-1b447090c38c
-	google.golang.org/grpc v1.52.0
+	google.golang.org/grpc v1.52.3
 	k8s.io/api v0.26.1
 	k8s.io/apimachinery v0.26.1
 	k8s.io/client-go v0.26.1
