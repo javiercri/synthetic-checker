@@ -1,11 +1,11 @@
-{{- if and .Values.serviceAccount.create (or .Values.k8sLeaderElection .Values.watchIngresses) -}}
+{{- if and .Values.serviceAccount.create (or .Values.k8sLeaderElection .Values.watcher.ingresses) -}}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: {{ include "synthetic-checker.fullname" . }}
 rules:
-{{- if .Values.watchIngresses }}
+{{- if .Values.watcher.ingresses }}
 - apiGroups:
     - ""
   resources:

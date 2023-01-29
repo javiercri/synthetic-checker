@@ -56,14 +56,20 @@ spec:
                 fieldPath: metadata.namespace
           args:
             - start
-            - -p {{ .Values.service.containerPort }}
-            - -F {{ .Values.statusCodes.failed }}
-            - -D {{ .Values.statusCodes.degraded }}
+            - --port {{ .Values.service.containerPort }}
+            - --failed-status-code {{ .Values.statusCodes.failed }}
+            - --degraded-status-code {{ .Values.statusCodes.degraded }}
           {{- if and (or (gt (int .Values.replicaCount) 1) .Values.autoscaling.enabled) .Values.k8sLeaderElection }}
             - --k8s-leader-election
           {{- end }}
-          {{- if .Values.watchIngresses }}
+          {{- if .Values.watcher.ingresses }}
             - --watch-ingresses
+          {{- end }}
+          {{- with .Values.watcher.requiredLabel }}
+            - --required-label={{ . }}
+          {{- end }}
+          {{- with .Values.watcher.namespaces }}
+            - --namespaces={{ join "," . }}
           {{- end }}
           ports:
             - name: http

@@ -10,5 +10,6 @@
 - [leaderelection](leaderelection/README.md)
 - [server](server/README.md)
 - [watcher](watcher/README.md)
+- [watcher/consts](watcher/consts/README.md)
 - [watcher/filter](watcher/filter/README.md)
 - [watcher/ingress](watcher/ingress/README.md)

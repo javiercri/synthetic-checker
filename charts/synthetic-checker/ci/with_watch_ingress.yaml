@@ -1,1 +1,6 @@
-watchIngresses: true
+watcher:
+  requiredLabel: synthetic-checker
+  namespaces:
+    - default
+    - kube-system
+  ingresses: true
