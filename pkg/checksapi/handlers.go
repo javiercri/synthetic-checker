@@ -67,6 +67,17 @@ func deleteCheckHandler(chkr *checker.Runner) http.HandlerFunc {
 	}
 }
 
+func configHandler(chkr *checker.Runner, srv *server.Server) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		body, err := chkr.Config()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		srv.JSONResponse(w, r, body, http.StatusOK)
+	}
+}
+
 func setRoutes(chkr *checker.Runner, srv *server.Server, failStatus, degradedStatus int) {
 	routes := server.Routes{
 		"/": {
@@ -83,6 +94,11 @@ func setRoutes(chkr *checker.Runner, srv *server.Server, failStatus, degradedSta
 			Func:    deleteCheckHandler(chkr),
 			Methods: []string{http.MethodDelete},
 			Name:    "delete",
+		},
+		"/config": {
+			Func:    configHandler(chkr, srv),
+			Methods: []string{http.MethodGet},
+			Name:    "config",
 		},
 	}
 	srv.WithRoutes(routes)

@@ -49,7 +49,7 @@ func New(cfg *config.Config) *cobra.Command {
 
 			viper.OnConfigChange(func(e fsnotify.Event) {
 				log.Println("Config file changed:", e.Name)
-				if err := viper.Unmarshal(cfg); err != nil {
+				if err := viper.Unmarshal(cfg, config.DecodeHooks()); err != nil {
 					panic(err)
 				}
 				if err := chkr.ReloadConfig(*cfg, !opts.haMode, opts.reset); err != nil {

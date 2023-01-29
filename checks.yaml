@@ -23,6 +23,7 @@ connChecks:
 tlsChecks:
   google:
     address: "www.google.com"
+    expiryThreshold: 96h
 # k8sChecks:
 #   coredns:
 #     kind: "Deployment.v1.apps"

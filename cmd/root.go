@@ -86,7 +86,7 @@ func initConfig(cfgFile string) (config.Config, error) {
 	}
 	if err == nil {
 		log.Println("Using config file:", viper.ConfigFileUsed())
-		err = viper.Unmarshal(&cfg)
+		err = viper.Unmarshal(&cfg, config.DecodeHooks())
 	}
 
 	return cfg, err

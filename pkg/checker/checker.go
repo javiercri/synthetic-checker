@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/rs/zerolog"
+	"github.com/spf13/viper"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/luisdavim/synthetic-checker/pkg/api"
@@ -80,6 +82,26 @@ func NewFromConfig(cfg config.Config, start bool) (*Runner, error) {
 	}
 
 	return r, nil
+}
+
+func (r *Runner) Config() (config.Config, error) {
+	cfg := config.Config{}
+	v := viper.New()
+	v.SetConfigType("json")
+	r.RLock()
+	defer r.RUnlock()
+	for _, check := range r.checks {
+		t, n, c, err := check.Config()
+		if err != nil {
+			return cfg, err
+		}
+		if err := v.MergeConfig(strings.NewReader(fmt.Sprintf(`{"%sChecks": {%q: %s}}`, t, n, c))); err != nil {
+			return cfg, err
+		}
+	}
+	err := v.Unmarshal(&cfg, config.DecodeHooks())
+
+	return cfg, err
 }
 
 // AddFromConfig loads the checks from the given configuration
@@ -263,6 +285,8 @@ func (r *Runner) ReloadConfig(cfg config.Config, start, reset bool) error {
 }
 
 func (r *Runner) RefreshUpstreams() {
+	r.RLock()
+	defer r.RUnlock()
 	for name, check := range r.checks {
 		err := r.informer.Replace(check)
 		r.log.Err(err).Str("name", name).Msg("syncing check upstream")
