@@ -84,12 +84,12 @@ func NewFromConfig(cfg config.Config, start bool) (*Runner, error) {
 	return r, nil
 }
 
+// Config returns the current runtime configuration for all checks.
 func (r *Runner) Config() (config.Config, error) {
 	cfg := config.Config{}
 	v := viper.New()
 	v.SetConfigType("json")
 	r.RLock()
-	defer r.RUnlock()
 	for _, check := range r.checks {
 		t, n, c, err := check.Config()
 		if err != nil {
@@ -99,6 +99,7 @@ func (r *Runner) Config() (config.Config, error) {
 			return cfg, err
 		}
 	}
+	r.RUnlock()
 	err := v.Unmarshal(&cfg, config.DecodeHooks())
 
 	return cfg, err
@@ -414,6 +415,7 @@ func (r *Runner) sync(leader string) error {
 }
 
 // Check runs all the checks in parallel and waits for them to complete
+// used for the CLI mode of the tool
 func (r *Runner) Check(ctx context.Context) {
 	var wg sync.WaitGroup
 	for name := range r.checks {
