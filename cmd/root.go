@@ -68,8 +68,8 @@ func initConfig(cfgFile string) (config.Config, error) {
 		}
 
 		// Search config in home directory with name "checks.yaml".
-		viper.AddConfigPath(home)
 		viper.AddConfigPath(".")
+		viper.AddConfigPath(home)
 		viper.AddConfigPath("/etc/config")
 		viper.SetConfigName("checks")
 		viper.SetConfigType("yaml")

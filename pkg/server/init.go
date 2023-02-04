@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -17,7 +18,13 @@ func mustBindPFlag(key string, f *flag.Flag) {
 
 // Init injects the server flags into a cobra command
 func Init(cmd *cobra.Command) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		panic(err)
+	}
+
 	viper.AddConfigPath(".")
+	viper.AddConfigPath(home)
 	viper.AddConfigPath("/etc/config")
 	viper.SetConfigName("server")
 	viper.SetConfigType("yaml")

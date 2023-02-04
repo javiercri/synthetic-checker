@@ -118,6 +118,7 @@ Flags:
   -C, --certFile string             File containing the x509 Certificate for HTTPS.
   -d, --debug                       Set log level to debug
   -D, --degraded-status-code int    HTTP status code to return when check check is failed (default 200)
+      --expose-config               Enable the /config endpoint to expose the runtime configuration
   -F, --failed-status-code int      HTTP status code to return when all checks are failed (default 200)
   -h, --help                        help for serve
       --k8s-leader-election         Enable leader election, only works when running in k8s
@@ -142,11 +143,42 @@ Global Flags:
 
 ## Configuration
 
+### Server
+
+The tool will look for the server configuration in the following locations:
+
+- The location from where the tool was started: `./server.yaml`
+- The current user's home directory: `${HOME}/server.yaml`
+- The `/etcd` directory: `/etc/config/server.yaml`
+
+The server settings can also be configured from environment variables and if a `.env` file is found it will be loaded.
+Have a look at the [server](./pkg/server) package for details on each configuration field.
+
+```yaml
+debug: false
+stripSlashes: false
+http:
+  auth:
+    user: admin
+    pass: t0p$ecr€t
+  port: 8080
+  securePort: 8443
+  certFile: /var/ect/tls/cert.pem
+  keyFile: /var/etc/tls/cert.key
+  requestLimit: 100
+  prettyJSON: false
+```
+
+### Checks
+
 By default the tool will look for a configuration file in one of the following locations:
 
 - The location from where the tool was started: `./checks.yaml`
 - The current user's home directory: `${HOME}/checks.yaml`
 - The `/etcd` directory: `/etc/config/checks.yaml`
+
+You can use the `--config` or `-c` flag to specify the checks configuration file path.
+This configuration file is used both by the server and CLI modes.
 
 A sample configuration file can be found in [checks.yaml](./checks.yaml).
 Have a look at the [config](./pkg/config) package for details on each configuration field.
