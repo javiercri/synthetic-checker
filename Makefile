@@ -109,7 +109,9 @@ watch: ## Run the code with cosmtrek/air to have automatic reload on changes
 	docker run -it --rm -w /go/src/$(PACKAGE_NAME) -v $(shell pwd):/go/src/$(PACKAGE_NAME) -p $(SERVICE_PORT):$(SERVICE_PORT) cosmtrek/air
 
 ## Test:
-test: deps vet fmt lint-go ## Run the tests of the project
+test: test-go helm-test
+
+test-go: deps vet fmt lint-go ## Run the tests of the project
 ifeq ($(EXPORT_RESULT), true)
 	GO111MODULE=off go get -u github.com/jstemmer/go-junit-report
 	$(eval OUTPUT_OPTIONS = | tee /dev/tty | go-junit-report -set-exit-code > junit-report.xml)
@@ -148,7 +150,7 @@ fmt: imports ## Format the code
 imports: ## Organise imports
 	goimports -local $(shell dirname ${REPO}) -w $(GOFILES)
 
-lint: lint-go lint-dockerfile lint-helm lint-yaml lint-shell ## Run all available linters
+lint: lint-go lint-shell lint-dockerfile lint-yaml lint-helm ## Run all available linters
 
 lint-go: deps ## Use golintci-lint on your project
 	$(eval OUTPUT_OPTIONS = $(shell [ "${EXPORT_RESULT}" == "true" ] && echo "--out-format checkstyle ./... | tee /dev/tty > checkstyle-report.xml" || echo "" ))
@@ -201,7 +203,7 @@ k8s_schemas: ## Get json schemas from CRDs to validate helm templates
 	@cd k8s_schemas && ../openapi2jsonschema.py https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/$(PROMETHEUS_VERSION)/example/prometheus-operator-crd/monitoring.coreos.com_thanosrulers.yaml
 	@[ -e openapi2jsonschema.py.original ] && rm openapi2jsonschema.py.original
 
-helm-test: k8s_schemas ## Test the helm chart
+helm-test: lint-helm k8s_schemas ## Test the helm chart
 	@echo -e "$(YELLOW)>>>$(RESET) Testing $(GREEN)Chart$(RESET) with $(CYAN)Default values$(RESET)"; \
 	helm template $(CHARTS_DIR)  | kubeconform  $(KUBECONFORM_FLGS)
 	@set -eo pipefail; \

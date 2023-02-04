@@ -50,6 +50,13 @@ informer:
   upstreams: []
   # - url: https://synthetic-checker.example.com
 
+configSources:
+  syncInterval: 5m
+  downstreams: []
+  # - url: https://synthetic-checker.example.com
+
+exposeConfig: false
+
 statusCodes:
   failed: 200
   degraded: 200

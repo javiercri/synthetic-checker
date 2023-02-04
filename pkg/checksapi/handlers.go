@@ -78,10 +78,10 @@ func configHandler(chkr *checker.Runner, srv *server.Server) http.HandlerFunc {
 	}
 }
 
-func setRoutes(chkr *checker.Runner, srv *server.Server, failStatus, degradedStatus int) {
+func setRoutes(chkr *checker.Runner, srv *server.Server, opts Options) {
 	routes := server.Routes{
 		"/": {
-			Func:    statusHandler(chkr, srv, failStatus, degradedStatus),
+			Func:    statusHandler(chkr, srv, opts.FailStatus, opts.DegradedStatus),
 			Methods: []string{http.MethodGet},
 			Name:    "status",
 		},
@@ -95,11 +95,13 @@ func setRoutes(chkr *checker.Runner, srv *server.Server, failStatus, degradedSta
 			Methods: []string{http.MethodDelete},
 			Name:    "delete",
 		},
-		"/config": {
+	}
+	if opts.ExposeConfig {
+		routes["/config"] = server.Handler{
 			Func:    configHandler(chkr, srv),
 			Methods: []string{http.MethodGet},
 			Name:    "config",
-		},
+		}
 	}
 	srv.WithRoutes(routes)
 }

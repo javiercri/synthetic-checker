@@ -14,6 +14,9 @@ A Helm chart for Kubernetes
 | autoscaling.minReplicas | int | `1` |  |
 | autoscaling.targetCPUUtilizationPercentage | int | `80` |  |
 | checks | object | `{}` |  |
+| configSources.downstreams | list | `[]` |  |
+| configSources.syncInterval | string | `"5m"` |  |
+| exposeConfig | bool | `false` |  |
 | fullnameOverride | string | `""` |  |
 | image.pullPolicy | string | `"IfNotPresent"` |  |
 | image.repository | string | `"synthetic-checker"` |  |

@@ -20,8 +20,6 @@ import (
 )
 
 type options struct {
-	failStatus     int
-	degradedStatus int
 	haMode         bool
 	watchIngresses bool
 	leID           string
@@ -31,8 +29,9 @@ type options struct {
 
 func New(cfg *config.Config) *cobra.Command {
 	var (
-		opts  options
-		wOpts watcher.Options
+		opts    options
+		wOpts   watcher.Options
+		apiOpts checksapi.Options
 	)
 	// cmd represents the base command when called without any subcommands
 	cmd := &cobra.Command{
@@ -79,7 +78,7 @@ func New(cfg *config.Config) *cobra.Command {
 						}
 						<-ctx.Done() // hold the routine, Run goes into the background
 					},
-					chkr.Syncer(le.ID, false, srvCfg.HTTP.Port),
+					chkr.StatusSyncer(le.ID, false, srvCfg.HTTP.Port),
 					func() {
 						chkr.Stop()
 						os.Exit(1) // TODO: is this overkill?
@@ -92,7 +91,7 @@ func New(cfg *config.Config) *cobra.Command {
 				}
 			}
 
-			srv := checksapi.New(chkr, srvCfg, opts.failStatus, opts.degradedStatus)
+			srv := checksapi.New(chkr, srvCfg, apiOpts)
 			srv.Run()
 			return nil
 		},
@@ -101,11 +100,12 @@ func New(cfg *config.Config) *cobra.Command {
 	server.Init(cmd)
 
 	cmd.Flags().BoolVarP(&opts.reset, "reset-config-on-reload", "", false, "delete all existing checks when hot-reloading the config file")
-	cmd.Flags().IntVarP(&opts.failStatus, "failed-status-code", "F", http.StatusOK, "HTTP status code to return when all checks are failed")
-	cmd.Flags().IntVarP(&opts.degradedStatus, "degraded-status-code", "D", http.StatusOK, "HTTP status code to return when check check is failed")
 	cmd.Flags().BoolVarP(&opts.haMode, "k8s-leader-election", "", false, "Enable leader election, only works when running in k8s")
 	cmd.Flags().StringVarP(&opts.leID, "leader-election-id", "", "", "set the leader election ID, defaults to the pod IP or hostname")
 	cmd.Flags().StringVarP(&opts.leNs, "leader-election-ns", "", "", "set the leader election namespace, defaults to the current namespace")
+	cmd.Flags().IntVarP(&apiOpts.FailStatus, "failed-status-code", "F", http.StatusOK, "HTTP status code to return when all checks are failed")
+	cmd.Flags().IntVarP(&apiOpts.DegradedStatus, "degraded-status-code", "D", http.StatusOK, "HTTP status code to return when check check is failed")
+	cmd.Flags().BoolVarP(&apiOpts.ExposeConfig, "expose-config", "", false, "Enable the /config endpoint to expose the runtime configuration")
 	cmd.Flags().BoolVarP(&opts.watchIngresses, "watch-ingresses", "w", false, "Automatically setup checks for k8s ingresses, only works when running in k8s")
 	cmd.Flags().StringVarP(&wOpts.RequiredLabel, "required-label", "", "", "ignore Ingress resources that don't have this label set to a truthful value")
 	cmd.Flags().StringVarP(&wOpts.Namespaces, "namespaces", "n", "", "a comma separated list of namespaces from where to watch Ingresses")

@@ -7,14 +7,15 @@ import (
 
 // Config represents the checks configuration file structure.
 type Config struct {
-	Informer   InformerCfg          `mapstructure:"informer,omitempty" json:"informer,omitempty"`
-	HTTPChecks map[string]HTTPCheck `mapstructure:"httpChecks,omitempty" json:"httpChecks,omitempty"`
-	GRPCChecks map[string]GRPCCheck `mapstructure:"grpcChecks,omitempty" json:"grpcChecks,omitempty"`
-	DNSChecks  map[string]DNSCheck  `mapstructure:"dnsChecks,omitempty" json:"dnsChecks,omitempty"`
-	ConnChecks map[string]ConnCheck `mapstructure:"connChecks,omitempty" json:"connChecks,omitempty"`
-	TLSChecks  map[string]TLSCheck  `mapstructure:"tlsChecks,omitempty" json:"tlsChecks,omitempty"`
-	K8sChecks  map[string]K8sCheck  `mapstructure:"k8sChecks,omitempty" json:"k8sChecks,omitempty"`
-	K8sPings   map[string]K8sPing   `mapstructure:"k8sPings,omitempty" json:"k8sPings,omitempty"`
+	ConfigSources ConfigSources        `mapstructure:"configSources,omitempty" json:"configSources,omitempty"`
+	Informer      InformerCfg          `mapstructure:"informer,omitempty" json:"informer,omitempty"`
+	HTTPChecks    map[string]HTTPCheck `mapstructure:"httpChecks,omitempty" json:"httpChecks,omitempty"`
+	GRPCChecks    map[string]GRPCCheck `mapstructure:"grpcChecks,omitempty" json:"grpcChecks,omitempty"`
+	DNSChecks     map[string]DNSCheck  `mapstructure:"dnsChecks,omitempty" json:"dnsChecks,omitempty"`
+	ConnChecks    map[string]ConnCheck `mapstructure:"connChecks,omitempty" json:"connChecks,omitempty"`
+	TLSChecks     map[string]TLSCheck  `mapstructure:"tlsChecks,omitempty" json:"tlsChecks,omitempty"`
+	K8sChecks     map[string]K8sCheck  `mapstructure:"k8sChecks,omitempty" json:"k8sChecks,omitempty"`
+	K8sPings      map[string]K8sPing   `mapstructure:"k8sPings,omitempty" json:"k8sPings,omitempty"`
 }
 
 // InformerCfg allows specifying upstream checks of tests they should run.
@@ -25,12 +26,18 @@ type InformerCfg struct {
 	// Checks are pushed upstream when they are created or updated, this helps keeping the system level-triggered
 	// it defaults to 24h and should not be done too frequently.
 	RefreshInterval metav1.Duration `mapstructure:"syncInterval,omitempty" json:"syncInterval,omitempty"`
-	Upstreams       []Upstream      `mapstructure:"upstreams,omitempty" json:"upstreams,omitempty"`
+	Upstreams       []Peer          `mapstructure:"upstreams,omitempty" json:"upstreams,omitempty"`
 }
 
-// Upstream represents an upstream synthetic-checker where to push checks to.
+// ConfigSources allows specifying sources from where to download configuration from.
+type ConfigSources struct {
+	RefreshInterval metav1.Duration `mapstructure:"syncInterval,omitempty" json:"syncInterval,omitempty"`
+	Downstreams     []Peer          `mapstructure:"downstreams,omitempty" json:"downstreams,omitempty"`
+}
+
+// Peer represents a peer synthetic-checker where to push checks to or download configuration from.
 // This is useful when combined with the insgress watcher to generate remote checks for the local cluster
-type Upstream struct {
+type Peer struct {
 	URL     string            `mapstructure:"url" json:"url"`
 	Headers map[string]string `mapstructure:"headers,omitempty" json:"headers,omitempty"`
 	Timeout metav1.Duration   `mapstructure:"timeout,omitempty" json:"timeout,omitempty"`

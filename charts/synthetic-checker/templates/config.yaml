@@ -1,4 +1,4 @@
-{{- if or .Values.checks .Values.informer.upstreams }}
+{{- if or .Values.checks .Values.informer.upstreams .Values.configSources.downstreams }}
 ---
 apiVersion: v1
 kind: Secret

@@ -9,8 +9,8 @@ import "github.com/luisdavim/synthetic-checker/pkg/informer"
 ## Index
 
 - [type Informer](<#type-informer>)
-  - [func New(config []config.Upstream) (*Informer, error)](<#func-new>)
-  - [func (i *Informer) AddUpstream(u config.Upstream)](<#func-informer-addupstream>)
+  - [func New(config []config.Peer) (*Informer, error)](<#func-new>)
+  - [func (i *Informer) AddUpstream(u config.Peer)](<#func-informer-addupstream>)
   - [func (i *Informer) CreateOrUpdate(check api.Check) error](<#func-informer-createorupdate>)
   - [func (i *Informer) Delete(check api.Check) error](<#func-informer-delete>)
   - [func (i *Informer) DeleteByName(name string) error](<#func-informer-deletebyname>)
@@ -18,7 +18,7 @@ import "github.com/luisdavim/synthetic-checker/pkg/informer"
   - [func (i *Informer) Replace(check api.Check) error](<#func-informer-replace>)
 
 
-## type [Informer](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/informer/informer.go#L20-L25>)
+## type [Informer](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/informer/informer.go#L21-L26>)
 
 Informer allows syncing check configuration to upstream synthetic\-checkers
 
@@ -29,21 +29,21 @@ type Informer struct {
 }
 ```
 
-### func [New](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/informer/informer.go#L28>)
+### func [New](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/informer/informer.go#L29>)
 
 ```go
-func New(config []config.Upstream) (*Informer, error)
+func New(config []config.Peer) (*Informer, error)
 ```
 
 New creates a new Informer
 
-### func \(\*Informer\) [AddUpstream](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/informer/informer.go#L45>)
+### func \(\*Informer\) [AddUpstream](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/informer/informer.go#L46>)
 
 ```go
-func (i *Informer) AddUpstream(u config.Upstream)
+func (i *Informer) AddUpstream(u config.Peer)
 ```
 
-### func \(\*Informer\) [CreateOrUpdate](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/informer/informer.go#L68>)
+### func \(\*Informer\) [CreateOrUpdate](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/informer/informer.go#L69>)
 
 ```go
 func (i *Informer) CreateOrUpdate(check api.Check) error
@@ -51,7 +51,7 @@ func (i *Informer) CreateOrUpdate(check api.Check) error
 
 CreateOrUpdate sends the given check configuration to the configured upstreams
 
-### func \(\*Informer\) [Delete](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/informer/informer.go#L77>)
+### func \(\*Informer\) [Delete](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/informer/informer.go#L78>)
 
 ```go
 func (i *Informer) Delete(check api.Check) error
@@ -59,7 +59,7 @@ func (i *Informer) Delete(check api.Check) error
 
 Delete deletes the given check configuration from the configured upstreams
 
-### func \(\*Informer\) [DeleteByName](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/informer/informer.go#L101>)
+### func \(\*Informer\) [DeleteByName](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/informer/informer.go#L102>)
 
 ```go
 func (i *Informer) DeleteByName(name string) error
@@ -67,13 +67,13 @@ func (i *Informer) DeleteByName(name string) error
 
 DeleteByName removes the given check configuration from the configured upstreams
 
-### func \(\*Informer\) [RemoveUpstream](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/informer/informer.go#L56>)
+### func \(\*Informer\) [RemoveUpstream](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/informer/informer.go#L57>)
 
 ```go
 func (i *Informer) RemoveUpstream(url string)
 ```
 
-### func \(\*Informer\) [Replace](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/informer/informer.go#L85>)
+### func \(\*Informer\) [Replace](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/informer/informer.go#L86>)
 
 ```go
 func (i *Informer) Replace(check api.Check) error

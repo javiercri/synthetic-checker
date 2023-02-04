@@ -2,6 +2,7 @@
 
 - [synthetic-checker](README.md)
 - [api](api/README.md)
+- [cfgfetcher](cfgfetcher/README.md)
 - [checker](checker/README.md)
 - [checks](checks/README.md)
 - [checksapi](checksapi/README.md)

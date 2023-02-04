@@ -17,6 +17,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/luisdavim/synthetic-checker/pkg/api"
+	"github.com/luisdavim/synthetic-checker/pkg/cfgfetcher"
 	"github.com/luisdavim/synthetic-checker/pkg/checks"
 	"github.com/luisdavim/synthetic-checker/pkg/config"
 	"github.com/luisdavim/synthetic-checker/pkg/informer"
@@ -47,9 +48,11 @@ type Runner struct {
 	status          api.Statuses
 	stop            map[string](chan struct{})
 	log             zerolog.Logger
-	informer        *informer.Informer
 	leader          string
+	informer        *informer.Informer
+	cfgPuller       *cfgfetcher.Fetcher
 	upstreamRefresh time.Duration
+	configRefresh   time.Duration
 	informOnly      bool
 	sync.RWMutex
 }
@@ -78,6 +81,18 @@ func NewFromConfig(cfg config.Config, start bool) (*Runner, error) {
 		r.upstreamRefresh = cfg.Informer.RefreshInterval.Duration
 		if r.upstreamRefresh == 0 {
 			r.upstreamRefresh = 24 * time.Hour
+		}
+	}
+
+	if len(cfg.ConfigSources.Downstreams) > 0 {
+		var err error
+		r.cfgPuller, err = cfgfetcher.New(cfg.ConfigSources.Downstreams)
+		if err != nil {
+			return nil, err
+		}
+		r.configRefresh = cfg.ConfigSources.RefreshInterval.Duration
+		if r.configRefresh == 0 {
+			r.configRefresh = 10 * time.Minute
 		}
 	}
 
@@ -177,7 +192,7 @@ func (r *Runner) AddCheck(name string, check api.Check, start bool) {
 	if r.informOnly {
 		start = false
 	}
-	r.log.Info().Str("name", name).Msg("new check")
+	r.log.Info().Str("name", name).Msg("add check")
 	r.Lock()
 	cur, found := r.checks[name]
 	r.checks[name] = check
@@ -194,8 +209,15 @@ func (r *Runner) AddCheck(name string, check api.Check, start bool) {
 
 // DelCheck stops the given check and removes it from the running config
 func (r *Runner) DelCheck(name string) {
-	r.log.Info().Str("name", name).Msg("deleting check")
 	r.Lock()
+	defer r.Unlock()
+	r.deleteCheck(name)
+}
+
+// deleteCheck stops and removes the given check
+// make sure to lock/unlock the checker when calling this function
+func (r *Runner) deleteCheck(name string) {
+	r.log.Info().Str("name", name).Msg("deleting check")
 	_, found := r.checks[name]
 	if stopCh, ok := r.stop[name]; ok && stopCh != nil {
 		r.log.Info().Str("name", name).Msg("stopping check")
@@ -204,7 +226,7 @@ func (r *Runner) DelCheck(name string) {
 	delete(r.stop, name)
 	delete(r.checks, name)
 	delete(r.status, name)
-	r.Unlock()
+
 	if r.informer != nil && found {
 		err := r.informer.DeleteByName(name)
 		r.log.Err(err).Str("name", name).Msg("deleting check upstream")
@@ -273,14 +295,20 @@ func (r *Runner) Run(ctx context.Context) {
 	if r.informer != nil {
 		_ = r.upstreamRefresher(ctx)
 	}
+
+	if r.cfgPuller != nil {
+		_ = r.configPoller(ctx, true)
+	}
 }
 
 // ReloadConfig can be called to reload the from file
 func (r *Runner) ReloadConfig(cfg config.Config, start, reset bool) error {
 	if reset {
+		r.Lock()
 		for name := range r.checks {
-			r.DelCheck(name)
+			r.deleteCheck(name)
 		}
+		r.Unlock()
 	}
 	return r.AddFromConfig(cfg, start)
 }
@@ -308,6 +336,36 @@ func (r *Runner) upstreamRefresher(ctx context.Context) error {
 				r.RefreshUpstreams()
 			case <-ctx.Done():
 				r.log.Info().Msg("stopping upstream refresher")
+				return
+			}
+		}
+	}()
+
+	return nil
+}
+
+func (r *Runner) configPoller(ctx context.Context, start bool) error {
+	if r.cfgPuller != nil {
+		return fmt.Errorf("missing cfg puller configuration")
+	}
+	r.log.Info().Msg("starting config polling")
+	go func() {
+		ticker := time.NewTicker(r.configRefresh)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				cfg, err := r.cfgPuller.GetConfigs()
+				if err != nil {
+					r.log.Err(err).Msg("getting config")
+					continue
+				}
+				for _, c := range cfg {
+					err := r.AddFromConfig(c, start)
+					r.log.Err(err).Msg("read config")
+				}
+			case <-ctx.Done():
+				r.log.Info().Msg("stopping config polling")
 				return
 			}
 		}
@@ -352,16 +410,16 @@ func (r *Runner) Stop() {
 	}
 }
 
-// Syncer returns a sync function that fetches the state from the leader
+// StatusSyncer returns a sync function that fetches the state from the leader
 // and sets up the followers as informers to the leader
-func (r *Runner) Syncer(selfID string, useSSL bool, port int) func(string) {
+func (r *Runner) StatusSyncer(selfID string, useSSL bool, port int) func(string) {
 	protocol := "http"
 	if useSSL {
 		protocol += "s"
 	}
 	if r.informer == nil {
 		var err error
-		r.informer, err = informer.New([]config.Upstream{})
+		r.informer, err = informer.New([]config.Peer{})
 		if err != nil {
 			panic(err)
 		}
@@ -386,18 +444,18 @@ func (r *Runner) Syncer(selfID string, useSSL bool, port int) func(string) {
 			// not the leader so act as an informer only
 			r.informOnly = true
 			// ensure the leader is set as an upstream
-			r.informer.AddUpstream(config.Upstream{URL: leader})
+			r.informer.AddUpstream(config.Peer{URL: leader})
 		} else {
 			// the leader should return to the original configuration
 			r.informOnly = starttedAsInformer
 			return
 		}
-		err := r.sync(leader)
+		err := r.pullStatus(leader)
 		r.log.Err(err).Msg("syncing data from leader")
 	}
 }
 
-func (r *Runner) sync(leader string) error {
+func (r *Runner) pullStatus(leader string) error {
 	res, err := http.Get(leader)
 	if err != nil {
 		return err

@@ -12,6 +12,7 @@ import "github.com/luisdavim/synthetic-checker/pkg/config"
 - [func StringToMetaV1DurationHookFunc() mapstructure.DecodeHookFunc](<#func-stringtometav1durationhookfunc>)
 - [type BaseCheck](<#type-basecheck>)
 - [type Config](<#type-config>)
+- [type ConfigSources](<#type-configsources>)
 - [type ConnCheck](<#type-conncheck>)
   - [func (c ConnCheck) Equal(other ConnCheck) bool](<#func-conncheck-equal>)
 - [type DNSCheck](<#type-dnscheck>)
@@ -25,9 +26,9 @@ import "github.com/luisdavim/synthetic-checker/pkg/config"
   - [func (c K8sCheck) Equal(other K8sCheck) bool](<#func-k8scheck-equal>)
 - [type K8sPing](<#type-k8sping>)
   - [func (c K8sPing) Equal(other K8sPing) bool](<#func-k8sping-equal>)
+- [type Peer](<#type-peer>)
 - [type TLSCheck](<#type-tlscheck>)
   - [func (c TLSCheck) Equal(other TLSCheck) bool](<#func-tlscheck-equal>)
-- [type Upstream](<#type-upstream>)
 
 
 ## func [DecodeHooks](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/hooks.go#L35>)
@@ -46,7 +47,7 @@ func StringToMetaV1DurationHookFunc() mapstructure.DecodeHookFunc
 
 StringToMetaV1DurationHookFunc returns a DecodeHookFunc that converts strings to metav1.Duration.
 
-## type [BaseCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L40-L47>)
+## type [BaseCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L47-L54>)
 
 BaseCheck holds the common properties across checks
 
@@ -61,24 +62,36 @@ type BaseCheck struct {
 }
 ```
 
-## type [Config](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L9-L18>)
+## type [Config](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L9-L19>)
 
 Config represents the checks configuration file structure.
 
 ```go
 type Config struct {
-    Informer   InformerCfg          `mapstructure:"informer,omitempty" json:"informer,omitempty"`
-    HTTPChecks map[string]HTTPCheck `mapstructure:"httpChecks,omitempty" json:"httpChecks,omitempty"`
-    GRPCChecks map[string]GRPCCheck `mapstructure:"grpcChecks,omitempty" json:"grpcChecks,omitempty"`
-    DNSChecks  map[string]DNSCheck  `mapstructure:"dnsChecks,omitempty" json:"dnsChecks,omitempty"`
-    ConnChecks map[string]ConnCheck `mapstructure:"connChecks,omitempty" json:"connChecks,omitempty"`
-    TLSChecks  map[string]TLSCheck  `mapstructure:"tlsChecks,omitempty" json:"tlsChecks,omitempty"`
-    K8sChecks  map[string]K8sCheck  `mapstructure:"k8sChecks,omitempty" json:"k8sChecks,omitempty"`
-    K8sPings   map[string]K8sPing   `mapstructure:"k8sPings,omitempty" json:"k8sPings,omitempty"`
+    ConfigSources ConfigSources        `mapstructure:"configSources,omitempty" json:"configSources,omitempty"`
+    Informer      InformerCfg          `mapstructure:"informer,omitempty" json:"informer,omitempty"`
+    HTTPChecks    map[string]HTTPCheck `mapstructure:"httpChecks,omitempty" json:"httpChecks,omitempty"`
+    GRPCChecks    map[string]GRPCCheck `mapstructure:"grpcChecks,omitempty" json:"grpcChecks,omitempty"`
+    DNSChecks     map[string]DNSCheck  `mapstructure:"dnsChecks,omitempty" json:"dnsChecks,omitempty"`
+    ConnChecks    map[string]ConnCheck `mapstructure:"connChecks,omitempty" json:"connChecks,omitempty"`
+    TLSChecks     map[string]TLSCheck  `mapstructure:"tlsChecks,omitempty" json:"tlsChecks,omitempty"`
+    K8sChecks     map[string]K8sCheck  `mapstructure:"k8sChecks,omitempty" json:"k8sChecks,omitempty"`
+    K8sPings      map[string]K8sPing   `mapstructure:"k8sPings,omitempty" json:"k8sPings,omitempty"`
 }
 ```
 
-## type [ConnCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L132-L144>)
+## type [ConfigSources](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L33-L36>)
+
+ConfigSources allows specifying sources from where to download configuration from.
+
+```go
+type ConfigSources struct {
+    RefreshInterval metav1.Duration `mapstructure:"syncInterval,omitempty" json:"syncInterval,omitempty"`
+    Downstreams     []Peer          `mapstructure:"downstreams,omitempty" json:"downstreams,omitempty"`
+}
+```
+
+## type [ConnCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L139-L151>)
 
 ConnCheck configures a connectivity check
 
@@ -104,7 +117,7 @@ type ConnCheck struct {
 func (c ConnCheck) Equal(other ConnCheck) bool
 ```
 
-## type [DNSCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L123-L129>)
+## type [DNSCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L130-L136>)
 
 DNSCheck configures a probe to check if a DNS record resolves
 
@@ -124,7 +137,7 @@ type DNSCheck struct {
 func (c DNSCheck) Equal(other DNSCheck) bool
 ```
 
-## type [GRPCCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L71-L103>)
+## type [GRPCCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L78-L110>)
 
 GRPCCheck configures a gRPC health check probe
 
@@ -170,7 +183,7 @@ type GRPCCheck struct {
 func (c GRPCCheck) Equal(other GRPCCheck) bool
 ```
 
-## type [HTTPCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L51-L68>)
+## type [HTTPCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L58-L75>)
 
 HTTPCheck configures a check for the response from a given URL. The only required field is \`URL\`, which must be a valid URL.
 
@@ -201,7 +214,7 @@ type HTTPCheck struct {
 func (c HTTPCheck) Equal(other HTTPCheck) bool
 ```
 
-## type [InformerCfg](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L21-L29>)
+## type [InformerCfg](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L22-L30>)
 
 InformerCfg allows specifying upstream checks of tests they should run.
 
@@ -213,11 +226,11 @@ type InformerCfg struct {
     // Checks are pushed upstream when they are created or updated, this helps keeping the system level-triggered
     // it defaults to 24h and should not be done too frequently.
     RefreshInterval metav1.Duration `mapstructure:"syncInterval,omitempty" json:"syncInterval,omitempty"`
-    Upstreams       []Upstream      `mapstructure:"upstreams,omitempty" json:"upstreams,omitempty"`
+    Upstreams       []Peer          `mapstructure:"upstreams,omitempty" json:"upstreams,omitempty"`
 }
 ```
 
-## type [K8sCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L148-L162>)
+## type [K8sCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L155-L169>)
 
 K8sCheck configures a check that probes the status of a Kubernetes resource. It supports any resource type that uses standard k8s status conditions.
 
@@ -245,7 +258,7 @@ type K8sCheck struct {
 func (c K8sCheck) Equal(other K8sCheck) bool
 ```
 
-## type [K8sPing](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L165-L176>)
+## type [K8sPing](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L172-L183>)
 
 K8sPing is a connectivity check that will try to connect to all Pods matching the selector
 
@@ -270,7 +283,19 @@ type K8sPing struct {
 func (c K8sPing) Equal(other K8sPing) bool
 ```
 
-## type [TLSCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L106-L120>)
+## type [Peer](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L40-L44>)
+
+Peer represents a peer synthetic\-checker where to push checks to or download configuration from. This is useful when combined with the insgress watcher to generate remote checks for the local cluster
+
+```go
+type Peer struct {
+    URL     string            `mapstructure:"url" json:"url"`
+    Headers map[string]string `mapstructure:"headers,omitempty" json:"headers,omitempty"`
+    Timeout metav1.Duration   `mapstructure:"timeout,omitempty" json:"timeout,omitempty"`
+}
+```
+
+## type [TLSCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L113-L127>)
 
 TLSCheck configures a TLS connection check, including certificate validation
 
@@ -296,18 +321,6 @@ type TLSCheck struct {
 
 ```go
 func (c TLSCheck) Equal(other TLSCheck) bool
-```
-
-## type [Upstream](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L33-L37>)
-
-Upstream represents an upstream synthetic\-checker where to push checks to. This is useful when combined with the insgress watcher to generate remote checks for the local cluster
-
-```go
-type Upstream struct {
-    URL     string            `mapstructure:"url" json:"url"`
-    Headers map[string]string `mapstructure:"headers,omitempty" json:"headers,omitempty"`
-    Timeout metav1.Duration   `mapstructure:"timeout,omitempty" json:"timeout,omitempty"`
-}
 ```
 
 

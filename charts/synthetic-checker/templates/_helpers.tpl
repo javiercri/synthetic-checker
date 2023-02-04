@@ -88,4 +88,8 @@ Create the name of the service account to use
 informer:
 {{- toYaml . | nindent 2 }}
 {{- end }}
+{{- with .Values.configSources }}
+configSources:
+{{- toYaml . | nindent 2 }}
+{{- end }}
 {{- end }}

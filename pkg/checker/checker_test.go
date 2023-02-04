@@ -277,7 +277,7 @@ func TestSync(t *testing.T) {
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
 			}
-			err = c.sync("http://leader:8080/")
+			err = c.pullStatus("http://leader:8080/")
 			if err != nil {
 				t.Errorf("sync() unexpected error: %v", err)
 			}

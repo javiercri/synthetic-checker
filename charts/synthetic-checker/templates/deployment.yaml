@@ -59,6 +59,9 @@ spec:
             - --port {{ .Values.service.containerPort }}
             - --failed-status-code {{ .Values.statusCodes.failed }}
             - --degraded-status-code {{ .Values.statusCodes.degraded }}
+          {{- if .Values.exposeConfig }}
+            - --expose-config
+          {{- end }}
           {{- if and (or (gt (int .Values.replicaCount) 1) .Values.autoscaling.enabled) .Values.k8sLeaderElection }}
             - --k8s-leader-election
           {{- end }}

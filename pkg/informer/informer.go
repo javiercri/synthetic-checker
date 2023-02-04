@@ -11,6 +11,7 @@ import (
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/rs/zerolog"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/luisdavim/synthetic-checker/pkg/api"
 	"github.com/luisdavim/synthetic-checker/pkg/config"
@@ -18,14 +19,14 @@ import (
 
 // Informer allows syncing check configuration to upstream synthetic-checkers
 type Informer struct {
-	config []config.Upstream
+	config []config.Peer
 	log    zerolog.Logger
 	client *retryablehttp.Client
 	sync.RWMutex
 }
 
 // New creates a new Informer
-func New(config []config.Upstream) (*Informer, error) {
+func New(config []config.Peer) (*Informer, error) {
 	for _, c := range config {
 		if c.URL == "" {
 			return nil, fmt.Errorf("invalid configuration")
@@ -42,7 +43,7 @@ func New(config []config.Upstream) (*Informer, error) {
 	return informer, nil
 }
 
-func (i *Informer) AddUpstream(u config.Upstream) {
+func (i *Informer) AddUpstream(u config.Peer) {
 	i.Lock()
 	defer i.Unlock()
 	for _, c := range i.config {
@@ -103,15 +104,20 @@ func (i *Informer) DeleteByName(name string) error {
 }
 
 func (i *Informer) informUpstreams(ctx context.Context, method, endpoint, body string) error {
+	eg, _ := errgroup.WithContext(context.Background())
 	i.RLock()
 	for _, c := range i.config {
-		url := fmt.Sprintf("%s/%s", c.URL, endpoint)
-		err := i.inform(ctx, c.Headers, method, url, body)
-		i.log.Log().Err(err).Msgf("informing %q of %s", url, method)
+		cfg := c
+		eg.Go(func() error {
+			url := fmt.Sprintf("%s/%s", cfg.URL, endpoint)
+			err := i.inform(ctx, cfg.Headers, method, url, body)
+			i.log.Log().Err(err).Msgf("informing %q of %s", url, method)
+			return err
+		})
 	}
 	i.RUnlock()
 
-	return nil
+	return eg.Wait()
 }
 
 func (i *Informer) inform(ctx context.Context, headers map[string]string, method, url, body string) error {
