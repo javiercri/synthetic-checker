@@ -32,6 +32,34 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
+        {{- if .Values.rbacProxy.enabled }}
+        - name: kube-rbac-proxy
+          image: "{{ .Values.rbacProxy.image.repository }}:{{ .Values.rbacProxy.image.tag }}"
+          args:
+          - "--secure-listen-address=0.0.0.0:8443"
+          - "--upstream=http://127.0.0.1:{{ .Values.service.containerPort }}/"
+          - "--config-file=/etc/kube-rbac-proxy/config-file.yaml"
+          - "--logtostderr=true"
+          - "--ignore-paths=/healthz,/status"
+          - "--v=10"
+          ports:
+            - name: https
+              containerPort: 8443
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: https
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: https
+          volumeMounts:
+            - name: rbac-proxy-config
+              mountPath: /etc/kube-rbac-proxy
+          securityContext:
+            allowPrivilegeEscalation: false
+        {{- end }}
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
@@ -59,6 +87,9 @@ spec:
             - --port {{ .Values.service.containerPort }}
             - --failed-status-code {{ .Values.statusCodes.failed }}
             - --degraded-status-code {{ .Values.statusCodes.degraded }}
+          {{- if .Values.rbacProxy.enabled }}
+            - --localhost-only
+          {{- end }}
           {{- if .Values.exposeConfig }}
             - --expose-config
           {{- end }}
@@ -74,6 +105,7 @@ spec:
           {{- with .Values.watcher.namespaces }}
             - --namespaces={{ join "," . }}
           {{- end }}
+          {{- if not .Values.rbacProxy.enabled }}
           ports:
             - name: http
               containerPort: {{ .Values.service.containerPort }}
@@ -86,6 +118,7 @@ spec:
             httpGet:
               path: /healthz
               port: http
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           {{- if or .Values.checks .Values.informer.upstreams }}
@@ -105,9 +138,16 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- if or .Values.checks .Values.informer.upstreams }}
+      {{- if or .Values.checks .Values.informer.upstreams .Values.configSources.downstreams .Values.rbacProxy.enabled }}
       volumes:
+        {{- if or .Values.checks .Values.informer.upstreams .Values.configSources.downstreams }}
         - name: config-volume
           secret:
             secretName: {{ include "synthetic-checker.fullname" . }}
+        {{- end }}
+        {{- if .Values.rbacProxy.enabled }}
+        - name: rbac-proxy-config
+          configMap:
+            name: {{ include "synthetic-checker.fullname" . }}-rbac-proxy
+        {{- end }}
       {{- end }}

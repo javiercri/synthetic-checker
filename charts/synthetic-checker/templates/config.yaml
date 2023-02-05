@@ -11,3 +11,19 @@ type: Opaque
 data:
   "checks.yaml": {{ include "synthetic-checker.config" . | b64enc | quote }}
 {{- end }}
+{{- if .Values.rbacProxy.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name:  {{ include "synthetic-checker.fullname" . }}-rbac-proxy
+data:
+  config-file.yaml: |+
+    authorization:
+      resourceAttributes:
+        namespace: default
+        apiVersion: v1
+        resource: services
+        subresource: proxy
+        name: kube-rbac-proxy
+{{- end }}

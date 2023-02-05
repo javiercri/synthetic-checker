@@ -456,7 +456,7 @@ func (r *Runner) StatusSyncer(selfID string, useSSL bool, port int) func(string)
 }
 
 func (r *Runner) pullStatus(leader string) error {
-	res, err := http.Get(leader)
+	res, err := http.Get(leader + "status")
 	if err != nil {
 		return err
 	}

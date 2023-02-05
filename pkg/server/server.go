@@ -40,9 +40,8 @@ type ShutdownFunc func() error
 type Server struct {
 	router       *mux.Router
 	logger       zerolog.Logger
-	config       HTTP
+	config       Config
 	shutdownFunc ShutdownFunc
-	stripSlashes bool
 }
 
 type Handler struct {
@@ -80,10 +79,9 @@ func NewWithRouter(cfg Config, r *mux.Router) *Server {
 		r = mux.NewRouter()
 	}
 	s := &Server{
-		router:       r,
-		config:       cfg.HTTP,
-		stripSlashes: cfg.StripSlashes,
-		logger:       zerolog.New(os.Stderr).With().Timestamp().Str("name", "server").Logger().Level(logLevel),
+		router: r,
+		config: cfg,
+		logger: zerolog.New(os.Stderr).With().Timestamp().Str("name", "server").Logger().Level(logLevel),
 	}
 
 	prometheus.MustRegister(httpRequestsTotal, httpRequestDuration)
@@ -183,10 +181,16 @@ func (s *Server) Run() {
 
 // Start starts the server in the background.
 func (s *Server) Start(signals chan os.Signal) (srvs []*http.Server) {
-	var rtr http.Handler
+	var (
+		rtr  http.Handler
+		host string
+	)
 	rtr = s.router
-	if s.stripSlashes {
+	if s.config.StripSlashes {
 		rtr = removeTrailingSlash(rtr)
+	}
+	if s.config.LocalHostOnly {
+		host = "127.0.0.1"
 	}
 	if s.config.RequestLimit > 0 {
 		lmt := tollbooth.NewLimiter(1, &limiter.ExpirableOptions{DefaultExpirationTTL: time.Hour})
@@ -195,7 +199,7 @@ func (s *Server) Start(signals chan os.Signal) (srvs []*http.Server) {
 	}
 	rtr = s.logRequestHandler(rtr)
 	go func() {
-		srv := &http.Server{Addr: fmt.Sprintf(":%d", s.config.Port), Handler: rtr}
+		srv := &http.Server{Addr: fmt.Sprintf("%s:%d", host, s.config.Port), Handler: rtr}
 		if err := srv.ListenAndServe(); err != nil {
 			s.logger.Err(err).Msg("Failed to start HTTP server")
 			signals <- syscall.SIGABRT
@@ -207,7 +211,7 @@ func (s *Server) Start(signals chan os.Signal) (srvs []*http.Server) {
 		if s.config.CertFile == "" || s.config.KeyFile == "" {
 			return
 		}
-		srv := &http.Server{Addr: fmt.Sprintf(":%d", s.config.SecurePort), Handler: rtr}
+		srv := &http.Server{Addr: fmt.Sprintf("%s:%d", host, s.config.SecurePort), Handler: rtr}
 		if err := srv.ListenAndServeTLS(s.config.CertFile, s.config.KeyFile); err != nil {
 			s.logger.Err(err).Msg("Failed to start HTTPS server")
 			signals <- syscall.SIGABRT

@@ -44,6 +44,9 @@ A Helm chart for Kubernetes
 | prometheus.operator.serviceMonitor.interval | string | `"15s"` |  |
 | prometheus.operator.serviceMonitor.scrapeTimeout | string | `"2s"` |  |
 | prometheus.port | int | `8080` |  |
+| rbacProxy.enabled | bool | `false` |  |
+| rbacProxy.image.repository | string | `"quay.io/brancz/kube-rbac-proxy"` |  |
+| rbacProxy.image.tag | string | `"latest"` |  |
 | replicaCount | int | `1` |  |
 | resources | object | `{}` |  |
 | securityContext | object | `{}` |  |

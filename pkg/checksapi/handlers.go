@@ -83,6 +83,11 @@ func setRoutes(chkr *checker.Runner, srv *server.Server, opts Options) {
 		"/": {
 			Func:    statusHandler(chkr, srv, opts.FailStatus, opts.DegradedStatus),
 			Methods: []string{http.MethodGet},
+			Name:    "root",
+		},
+		"/status": {
+			Func:    statusHandler(chkr, srv, opts.FailStatus, opts.DegradedStatus),
+			Methods: []string{http.MethodGet},
 			Name:    "status",
 		},
 		"/checks/{type}/{name}": {

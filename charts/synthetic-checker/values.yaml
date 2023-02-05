@@ -55,6 +55,12 @@ configSources:
   downstreams: []
   # - url: https://synthetic-checker.example.com
 
+rbacProxy:
+  enabled: false
+  image:
+    repository: quay.io/brancz/kube-rbac-proxy
+    tag: "latest"
+
 exposeConfig: false
 
 statusCodes:

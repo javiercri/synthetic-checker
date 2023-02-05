@@ -15,7 +15,6 @@ import "github.com/luisdavim/synthetic-checker/pkg/server"
 - [func ReadConfig(config *Config) error](<#func-readconfig>)
 - [type Auth](<#type-auth>)
 - [type Config](<#type-config>)
-- [type HTTP](<#type-http>)
 - [type Handler](<#type-handler>)
 - [type Routes](<#type-routes>)
 - [type Server](<#type-server>)
@@ -42,7 +41,7 @@ const (
 )
 ```
 
-## func [Init](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/init.go#L19>)
+## func [Init](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/init.go#L20>)
 
 ```go
 func Init(cmd *cobra.Command)
@@ -50,7 +49,7 @@ func Init(cmd *cobra.Command)
 
 Init injects the server flags into a cobra command
 
-## func [LoadEnvConfig](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/config.go#L62>)
+## func [LoadEnvConfig](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/config.go#L59>)
 
 ```go
 func LoadEnvConfig(rootDir string) error
@@ -62,7 +61,7 @@ func LoadEnvConfig(rootDir string) error
 func PrettyJSON(b []byte) []byte
 ```
 
-## func [ReadConfig](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/config.go#L42>)
+## func [ReadConfig](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/config.go#L39>)
 
 ```go
 func ReadConfig(config *Config) error
@@ -79,39 +78,31 @@ type Auth struct {
 }
 ```
 
-## type [Config](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/config.go#L32-L40>)
+## type [Config](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/config.go#L21-L37>)
 
-Config holds the full application configuration
+Config holds the server configuration
 
 ```go
 type Config struct {
-    HTTP  HTTP `mapstructure:"http,omitempty"`
-    Debug bool `mapstructure:"debug,omitempty"`
+    Auth          Auth   `mapstructure:"auth,omitempty"`
+    Port          int    `mapstructure:"port,omitempty"`
+    LocalHostOnly bool   `mapstructure:"localHostOnly,omitempty"`
+    SecurePort    int    `mapstructure:"securePort,omitempty"`
+    CertFile      string `mapstructure:"certFile,omitempty"`
+    KeyFile       string `mapstructure:"keyFile,omitempty"`
+    // Max requests per second per client allowed
+    RequestLimit float64 `mapstructure:"requestLimit,omitempty"`
     // If you read the documentation for ScrictSlashes
     // it lets you know that it generates a 301 redirect and converts all requests to GET requests.
     // So a POST request to /route will turn into a GET to /route/ and that will cause problems.
     // So instead you can set StripSlashes that will strip the trailing slashes before routing.
     StripSlashes bool `mapstructure:"stripSlashes,omitempty"`
+    PrettyJSON   bool `mapstructure:"prettyJSON,omitempty"`
+    Debug        bool `mapstructure:"debug,omitempty"`
 }
 ```
 
-## type [HTTP](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/config.go#L21-L29>)
-
-HTTP holds the configuration for the HTTP server
-
-```go
-type HTTP struct {
-    Auth         Auth    `mapstructure:"auth,omitempty"`
-    Port         int     `mapstructure:"port,omitempty"`
-    SecurePort   int     `mapstructure:"securePort,omitempty"`
-    CertFile     string  `mapstructure:"certFile,omitempty"`
-    KeyFile      string  `mapstructure:"keyFile,omitempty"`
-    RequestLimit float64 `mapstructure:"requestLimit,omitempty"`
-    PrettyJSON   bool    `mapstructure:"prettyJSON,omitempty"`
-}
-```
-
-## type [Handler](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/server.go#L48-L62>)
+## type [Handler](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/server.go#L47-L61>)
 
 ```go
 type Handler struct {
@@ -131,13 +122,13 @@ type Handler struct {
 }
 ```
 
-## type [Routes](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/server.go#L64>)
+## type [Routes](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/server.go#L63>)
 
 ```go
 type Routes map[string]Handler
 ```
 
-## type [Server](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/server.go#L40-L46>)
+## type [Server](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/server.go#L40-L45>)
 
 ```go
 type Server struct {
@@ -145,7 +136,7 @@ type Server struct {
 }
 ```
 
-### func [New](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/server.go#L67>)
+### func [New](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/server.go#L66>)
 
 ```go
 func New(cfg Config) *Server
@@ -153,7 +144,7 @@ func New(cfg Config) *Server
 
 New creates a new instance of the server.
 
-### func [NewWithRouter](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/server.go#L74>)
+### func [NewWithRouter](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/server.go#L73>)
 
 ```go
 func NewWithRouter(cfg Config, r *mux.Router) *Server
@@ -167,7 +158,7 @@ NewWithRouter creates a new instance of the server and allows you to pass a rout
 func (s *Server) JSONResponse(w http.ResponseWriter, r *http.Request, result interface{}, responseCode int)
 ```
 
-### func \(\*Server\) [Run](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/server.go#L164>)
+### func \(\*Server\) [Run](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/server.go#L162>)
 
 ```go
 func (s *Server) Run()
@@ -175,7 +166,7 @@ func (s *Server) Run()
 
 Run starts the server and waits for the signal to stop
 
-### func \(\*Server\) [Start](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/server.go#L185>)
+### func \(\*Server\) [Start](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/server.go#L183>)
 
 ```go
 func (s *Server) Start(signals chan os.Signal) (srvs []*http.Server)
@@ -183,7 +174,7 @@ func (s *Server) Start(signals chan os.Signal) (srvs []*http.Server)
 
 Start starts the server in the background.
 
-### func \(\*Server\) [Use](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/server.go#L159>)
+### func \(\*Server\) [Use](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/server.go#L157>)
 
 ```go
 func (s *Server) Use(mwf ...mux.MiddlewareFunc)
@@ -191,7 +182,7 @@ func (s *Server) Use(mwf ...mux.MiddlewareFunc)
 
 Use appends a MiddlewareFunc to the chain. Middleware can be used to intercept or otherwise modify requests and/or responses, and are executed in the order that they are applied to the Router.
 
-### func \(\*Server\) [WithMethodNotAllowedHandler](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/server.go#L152>)
+### func \(\*Server\) [WithMethodNotAllowedHandler](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/server.go#L150>)
 
 ```go
 func (s *Server) WithMethodNotAllowedHandler(notAllowed http.HandlerFunc)
@@ -199,7 +190,7 @@ func (s *Server) WithMethodNotAllowedHandler(notAllowed http.HandlerFunc)
 
 WithMethodNotAllowedHandler allows you to specify a handler to use when a method is not allowed for the matched route
 
-### func \(\*Server\) [WithNotFoundHandler](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/server.go#L147>)
+### func \(\*Server\) [WithNotFoundHandler](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/server.go#L145>)
 
 ```go
 func (s *Server) WithNotFoundHandler(notFound http.HandlerFunc)
@@ -207,7 +198,7 @@ func (s *Server) WithNotFoundHandler(notFound http.HandlerFunc)
 
 WithNotFoundHandler allows you to specify a handler to use when no routes can be matched
 
-### func \(\*Server\) [WithPrefixedRoutes](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/server.go#L136>)
+### func \(\*Server\) [WithPrefixedRoutes](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/server.go#L134>)
 
 ```go
 func (s *Server) WithPrefixedRoutes(prefix string, routes Routes)
@@ -215,7 +206,7 @@ func (s *Server) WithPrefixedRoutes(prefix string, routes Routes)
 
 WithPrefixedRoutes adds routes to the server under the prefix using a subrouter
 
-### func \(\*Server\) [WithRoutes](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/server.go#L131>)
+### func \(\*Server\) [WithRoutes](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/server.go#L129>)
 
 ```go
 func (s *Server) WithRoutes(routes Routes)
@@ -223,7 +214,7 @@ func (s *Server) WithRoutes(routes Routes)
 
 WithRoutes adds routes to the server, it may be called multiple times with different sets of routes.
 
-### func \(\*Server\) [WithShutdownFunc](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/server.go#L142>)
+### func \(\*Server\) [WithShutdownFunc](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/server/server.go#L140>)
 
 ```go
 func (s *Server) WithShutdownFunc(shutdownFunc ShutdownFunc)

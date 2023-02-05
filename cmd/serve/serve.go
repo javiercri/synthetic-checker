@@ -62,8 +62,8 @@ func New(cfg *config.Config) *cobra.Command {
 				return fmt.Errorf("error reading server config: %v", err)
 			}
 
-			wOpts.MetricsAddr = fmt.Sprintf(":%d", srvCfg.HTTP.Port+1)
-			wOpts.ProbeAddr = fmt.Sprintf(":%d", srvCfg.HTTP.Port+2)
+			wOpts.MetricsAddr = fmt.Sprintf(":%d", srvCfg.Port+1)
+			wOpts.ProbeAddr = fmt.Sprintf(":%d", srvCfg.Port+2)
 
 			if opts.haMode {
 				le, err := leaderelection.NewLeaderElector(opts.leID, opts.leNs)
@@ -78,7 +78,7 @@ func New(cfg *config.Config) *cobra.Command {
 						}
 						<-ctx.Done() // hold the routine, Run goes into the background
 					},
-					chkr.StatusSyncer(le.ID, false, srvCfg.HTTP.Port),
+					chkr.StatusSyncer(le.ID, false, srvCfg.Port),
 					func() {
 						chkr.Stop()
 						os.Exit(1) // TODO: is this overkill?

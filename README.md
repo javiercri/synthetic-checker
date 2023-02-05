@@ -151,22 +151,22 @@ The tool will look for the server configuration in the following locations:
 - The current user's home directory: `${HOME}/server.yaml`
 - The `/etcd` directory: `/etc/config/server.yaml`
 
-The server settings can also be configured from environment variables and if a `.env` file is found it will be loaded.
+The server settings can also be configured from environment variables (prefixed with `HTTP_`) and if a `.env` file is found it will be loaded.
 Have a look at the [server](./pkg/server) package for details on each configuration field.
 
 ```yaml
 debug: false
 stripSlashes: false
-http:
-  auth:
-    user: admin
-    pass: t0p$ecr€t
-  port: 8080
-  securePort: 8443
-  certFile: /var/ect/tls/cert.pem
-  keyFile: /var/etc/tls/cert.key
-  requestLimit: 100
-  prettyJSON: false
+localHostOnly: false
+prettyJSON: false
+auth:
+  user: admin
+  pass: t0p$ecr€t
+port: 8080
+securePort: 8443
+certFile: /var/ect/tls/cert.pem
+keyFile: /var/etc/tls/cert.key
+requestLimit: 100 # Max requests per second per client allowed
 ```
 
 ### Checks

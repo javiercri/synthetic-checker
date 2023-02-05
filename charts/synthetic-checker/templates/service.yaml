@@ -8,10 +8,17 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   ports:
+  {{- if not .Values.rbacProxy.enabled }}
     - port: {{ .Values.service.port }}
       targetPort: http
       protocol: TCP
       name: http
+  {{- else }}
+    - port: 443
+      targetPort: https
+      protocol: TCP
+      name: https
+  {{- end }}
   selector:
     {{- include "synthetic-checker.selectorLabels" . | nindent 4 }}
     app: synthetic-checker
