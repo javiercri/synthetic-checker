@@ -50,10 +50,12 @@ spec:
             httpGet:
               path: /healthz
               port: https
+              scheme: HTTPS
           readinessProbe:
             httpGet:
               path: /healthz
               port: https
+              scheme: HTTPS
           volumeMounts:
             - name: rbac-proxy-config
               mountPath: /etc/kube-rbac-proxy
