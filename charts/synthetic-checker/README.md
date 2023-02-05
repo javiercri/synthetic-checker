@@ -22,7 +22,7 @@ A Helm chart for Kubernetes
 | image.repository | string | `"synthetic-checker"` |  |
 | image.tag | string | `"latest"` |  |
 | imagePullSecrets | list | `[]` |  |
-| informer.informOnly | bool | `false` |  |
+| informer.informOnly | bool | `false` | when set to true, will prevent the checks from being executed in the local instance |
 | informer.upstreams | list | `[]` |  |
 | ingress.annotations | object | `{}` |  |
 | ingress.className | string | `""` |  |
@@ -44,18 +44,19 @@ A Helm chart for Kubernetes
 | prometheus.operator.serviceMonitor.interval | string | `"15s"` |  |
 | prometheus.operator.serviceMonitor.scrapeTimeout | string | `"2s"` |  |
 | prometheus.port | int | `8080` |  |
+| rbacProxy.clientSecret | string | if rbacProxy is enabled, the chart will use the app's SA if this is not set | The name of a kubernetes service account secret |
 | rbacProxy.enabled | bool | `false` |  |
 | rbacProxy.image.repository | string | `"quay.io/brancz/kube-rbac-proxy"` |  |
 | rbacProxy.image.tag | string | `"latest"` |  |
-| replicaCount | int | `1` |  |
+| replicaCount | int | `1` | set replicaCount > 1 and k8sLeaderElection to true to enable leader/follower HA mode |
 | resources | object | `{}` |  |
 | securityContext | object | `{}` |  |
 | service.containerPort | int | `8080` |  |
 | service.port | int | `80` |  |
 | service.type | string | `"ClusterIP"` |  |
 | serviceAccount.annotations | object | `{}` |  |
-| serviceAccount.create | bool | `true` |  |
-| serviceAccount.name | string | `""` |  |
+| serviceAccount.create | bool | `true` | Specifies whether a service account should be created |
+| serviceAccount.name | string | `""` | The name of the service account to use. If not set and create is true, a name is generated using the fullname template |
 | statusCodes.degraded | int | `200` |  |
 | statusCodes.failed | int | `200` |  |
 | tolerations | list | `[]` |  |

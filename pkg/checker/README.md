@@ -61,7 +61,7 @@ func (r *Runner) AddFromConfig(cfg config.Config, start bool) error
 
 AddFromConfig loads the checks from the given configuration
 
-### func \(\*Runner\) [Check](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/checker/checker.go#L477>)
+### func \(\*Runner\) [Check](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/checker/checker.go#L482>)
 
 ```go
 func (r *Runner) Check(ctx context.Context)
@@ -147,7 +147,7 @@ func (r *Runner) Stop()
 
 Stop stops all checks
 
-### func \(\*Runner\) [Summary](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/checker/checker.go#L490>)
+### func \(\*Runner\) [Summary](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/checker/checker.go#L495>)
 
 ```go
 func (r *Runner) Summary() (allFailed, anyFailed bool)

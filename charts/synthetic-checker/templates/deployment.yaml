@@ -84,6 +84,13 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
+        {{- if or .Values.rbacProxy.enabled .Values.rbacProxy.clientSecret }}
+          - name: RBAC_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.rbacProxy.clientSecret | default (printf "%s-krp" (include "synthetic-checker.serviceAccountName" .)) }}
+                key: token
+        {{- end }}
           args:
             - start
             - --port {{ .Values.service.containerPort }}

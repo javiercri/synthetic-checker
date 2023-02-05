@@ -44,7 +44,7 @@ func Init(cmd *cobra.Command) {
 	flagSet.StringP("keyFile", "K", "", "File containing the x509 private key for HTTPS.")
 	flagSet.IntP("request-limit", "l", 0, "Max requests per second per client allowed")
 	flagSet.BoolP("pretty-json", "", false, "Pretty print JSON responses")
-	flagSet.BoolP("localhost-only", "", false, "wether to bind to 127.0.0.1 or 0.0.0.0")
+	flagSet.BoolP("localhost-only", "", false, "Whether to bind to 127.0.0.1 or 0.0.0.0")
 	flagSet.BoolP("strip-slashes", "S", false, "Strip trailing slashes befofore matching routes")
 
 	cmd.Flags().AddFlagSet(flagSet)

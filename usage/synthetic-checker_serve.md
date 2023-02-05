@@ -23,7 +23,7 @@ synthetic-checker serve [flags]
   -K, --keyFile string              File containing the x509 private key for HTTPS.
       --leader-election-id string   set the leader election ID, defaults to the pod IP or hostname
       --leader-election-ns string   set the leader election namespace, defaults to the current namespace
-      --localhost-only              wether to bind to 127.0.0.1 or 0.0.0.0
+      --localhost-only              Whether to bind to 127.0.0.1 or 0.0.0.0
   -n, --namespaces string           a comma separated list of namespaces from where to watch Ingresses
   -P, --pass string                 Set BasicAuth password for the http listener
   -p, --port int                    Port for the http listener (default 8080)

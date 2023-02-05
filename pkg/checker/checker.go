@@ -426,6 +426,11 @@ func (r *Runner) StatusSyncer(selfID string, useSSL bool, port int) func(string)
 	}
 	starttedAsInformer := r.informOnly
 	selfURL := fmt.Sprintf("%s://%s:%d/", protocol, selfID, port)
+	var headers map[string]string
+	if os.Getenv("RBAC_TOKEN") != "" {
+		headers = make(map[string]string)
+		headers["Authorization"] = fmt.Sprintf("Bearer %s", os.Getenv("RBAC_TOKEN"))
+	}
 	return func(leader string) {
 		leader = fmt.Sprintf("%s://%s:%d/", protocol, leader, port)
 		if r.leader != leader {
@@ -444,7 +449,7 @@ func (r *Runner) StatusSyncer(selfID string, useSSL bool, port int) func(string)
 			// not the leader so act as an informer only
 			r.informOnly = true
 			// ensure the leader is set as an upstream
-			r.informer.AddUpstream(config.Peer{URL: leader})
+			r.informer.AddUpstream(config.Peer{URL: leader, Headers: headers})
 		} else {
 			// the leader should return to the original configuration
 			r.informOnly = starttedAsInformer

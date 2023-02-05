@@ -45,7 +45,7 @@ checks:
   #     initialDelay: 2s
 
 informer:
-  # when set to true, will prevent the checks from being executed in the local instance
+  # -- when set to true, will prevent the checks from being executed in the local instance
   informOnly: false
   upstreams: []
   # - url: https://synthetic-checker.example.com
@@ -57,6 +57,9 @@ configSources:
 
 rbacProxy:
   enabled: false
+  # -- The name of a kubernetes service account secret
+  # @default -- if rbacProxy is enabled, the chart will use the app's SA if this is not set
+  clientSecret: ""
   image:
     repository: quay.io/brancz/kube-rbac-proxy
     tag: "latest"
@@ -67,7 +70,7 @@ statusCodes:
   failed: 200
   degraded: 200
 
-# set replicaCount > 1 and k8sLeaderElection to true to enable leader/follower HA mode
+# -- set replicaCount > 1 and k8sLeaderElection to true to enable leader/follower HA mode
 replicaCount: 1
 k8sLeaderElection: false
 watcher:
@@ -87,11 +90,11 @@ nameOverride: ""
 fullnameOverride: ""
 
 serviceAccount:
-  # Specifies whether a service account should be created
+  # -- Specifies whether a service account should be created
   create: true
   # Annotations to add to the service account
   annotations: {}
-  # The name of the service account to use.
+  # -- The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
@@ -145,7 +148,7 @@ ingress:
 
 resources:
   {}
-  # We usually recommend not to specify default resources and to leave this as a conscious
+  # -- We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
