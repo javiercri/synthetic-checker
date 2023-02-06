@@ -33,6 +33,8 @@ func StringToMetaV1DurationHookFunc() mapstructure.DecodeHookFunc {
 	}
 }
 
+// TemplatedStringHookFunc returns a DecodeHookFunc that renders
+// go templates from a TemplatedString field
 func TemplatedStringHookFunc() mapstructure.DecodeHookFunc {
 	return func(
 		f reflect.Type,
@@ -58,5 +60,6 @@ func DecodeHooks() viper.DecoderConfigOption {
 		mapstructure.StringToTimeDurationHookFunc(),
 		mapstructure.StringToSliceHookFunc(","),
 		StringToMetaV1DurationHookFunc(),
+		TemplatedStringHookFunc(),
 	))
 }

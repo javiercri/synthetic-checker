@@ -17,18 +17,20 @@ if [[ "${status}" != "true" ]]; then
 fi
 echo -e "-- PASS\n"
 
-cat << EOF > "${CHECKER_CFG}"
+export TEST_HOST="httpstat.us"
+
+cat << 'EOF' > "${CHECKER_CFG}"
 httpChecks:
   stat503:
-    url: https://httpstat.us/503
+    url: https://{{ .Env.TEST_HOST }}/503
     interval: 10s
   stat200:
-    url: https://httpstat.us/200
+    url: https://{{ .Env.TEST_HOST }}/200
     interval: 10s
     initialDelay: 2s
 EOF
 
-SRV_URL='http://localhost:8080'
+export SRV_URL='http://localhost:8080'
 
 (go run main.go serve -c "${CHECKER_CFG}") &
 # SRV_PID=$!
@@ -126,7 +128,7 @@ cat << EOF > "${INFORMER_CFG}"
 informer:
   informOnly: true
   upstreams:
-    - url: http://127.0.0.1:8080
+    - url: {{ .Env.SRV_URL }}
 EOF
 
 INFORMER_URL='http://localhost:8081'
