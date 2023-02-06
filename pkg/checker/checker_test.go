@@ -104,7 +104,7 @@ func TestChecker(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
-			httpmock.RegisterResponder(tt.config.HTTPChecks[checkName].Method, tt.config.HTTPChecks[checkName].URL, httpmock.ResponderFromResponse(&tt.response))
+			httpmock.RegisterResponder(tt.config.HTTPChecks[checkName].Method, tt.config.HTTPChecks[checkName].URL.String(), httpmock.ResponderFromResponse(&tt.response))
 			c, err := NewFromConfig(tt.config, false)
 			defer func() {
 				// avoid panic with the prometheus.MustRegister used in NewFromConfig

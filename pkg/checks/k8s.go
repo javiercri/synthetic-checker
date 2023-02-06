@@ -150,7 +150,7 @@ func (c *k8sCheck) do(ctx context.Context) (*unstructured.UnstructuredList, erro
 			Kind:    gvk.Kind,
 			Version: gvk.Version,
 		})
-		if err := c.client.Get(context.Background(), client.ObjectKey{
+		if err := c.client.Get(ctx, client.ObjectKey{
 			Namespace: c.config.Namespace,
 			Name:      c.config.Name,
 		}, &u); err != nil {

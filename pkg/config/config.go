@@ -38,9 +38,9 @@ type ConfigSources struct {
 // Peer represents a peer synthetic-checker where to push checks to or download configuration from.
 // This is useful when combined with the insgress watcher to generate remote checks for the local cluster
 type Peer struct {
-	URL     string            `mapstructure:"url" json:"url"`
-	Headers map[string]string `mapstructure:"headers,omitempty" json:"headers,omitempty"`
-	Timeout metav1.Duration   `mapstructure:"timeout,omitempty" json:"timeout,omitempty"`
+	URL     TemplatedString            `mapstructure:"url" json:"url"`
+	Headers map[string]TemplatedString `mapstructure:"headers,omitempty" json:"headers,omitempty"`
+	Timeout metav1.Duration            `mapstructure:"timeout,omitempty" json:"timeout,omitempty"`
 }
 
 // BaseCheck holds the common properties across checks
@@ -57,18 +57,18 @@ type BaseCheck struct {
 // The only required field is `URL`, which must be a valid URL.
 type HTTPCheck struct {
 	// URL is the URL to  be checked.
-	URL string `mapstructure:"url" json:"url"`
+	URL TemplatedString `mapstructure:"url" json:"url"`
 	// Method is the HTTP method to use for this check.
 	// Method is optional and defaults to `GET` if undefined.
 	Method string `mapstructure:"method,omitempty" json:"method,omitempty"`
 	// Headers to set on the request
-	Headers map[string]string `mapstructure:"headers,omitempty" json:"headers,omitempty"`
+	Headers map[string]TemplatedString `mapstructure:"headers,omitempty" json:"headers,omitempty"`
 	// Body is an optional request body to be posted to the target URL.
-	Body string `mapstructure:"body,omitempty" json:"body,omitempty"`
+	Body TemplatedString `mapstructure:"body,omitempty" json:"body,omitempty"`
 	// ExpectedStatus is the expected response status code, defaults to `200`.
 	ExpectedStatus int `mapstructure:"expectedStatus,omitempty" json:"expectedStatus,omitempty"`
 	// ExpectedBody is optional; if defined, makes the check fail if the response body does not match
-	ExpectedBody string `mapstructure:"expectedBody,omitempty" json:"expectedBody,omitempty"`
+	ExpectedBody TemplatedString `mapstructure:"expectedBody,omitempty" json:"expectedBody,omitempty"`
 	// CertExpiryThreshold is the minimum amount of time that the TLS certificate should be valid for
 	CertExpiryThreshold metav1.Duration `mapstructure:"expiryThreshold,omitempty" json:"expiryThreshold,omitempty"`
 	BaseCheck

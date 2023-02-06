@@ -10,6 +10,7 @@ import "github.com/luisdavim/synthetic-checker/pkg/config"
 
 - [func DecodeHooks() viper.DecoderConfigOption](<#func-decodehooks>)
 - [func StringToMetaV1DurationHookFunc() mapstructure.DecodeHookFunc](<#func-stringtometav1durationhookfunc>)
+- [func TemplatedStringHookFunc() mapstructure.DecodeHookFunc](<#func-templatedstringhookfunc>)
 - [type BaseCheck](<#type-basecheck>)
 - [type Config](<#type-config>)
 - [type ConfigSources](<#type-configsources>)
@@ -29,9 +30,12 @@ import "github.com/luisdavim/synthetic-checker/pkg/config"
 - [type Peer](<#type-peer>)
 - [type TLSCheck](<#type-tlscheck>)
   - [func (c TLSCheck) Equal(other TLSCheck) bool](<#func-tlscheck-equal>)
+- [type TemplatedString](<#type-templatedstring>)
+  - [func (t TemplatedString) String() string](<#func-templatedstring-string>)
+  - [func (t *TemplatedString) UnmarshalJSON(data []byte) error](<#func-templatedstring-unmarshaljson>)
 
 
-## func [DecodeHooks](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/hooks.go#L35>)
+## func [DecodeHooks](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/hooks.go#L56>)
 
 ```go
 func DecodeHooks() viper.DecoderConfigOption
@@ -39,13 +43,19 @@ func DecodeHooks() viper.DecoderConfigOption
 
 DecodeHooks returns a DecoderConfigOption to override viper's default DecoderConfig.DecodeHook value to include the StringToMetaV1DurationHookFunc hook
 
-## func [StringToMetaV1DurationHookFunc](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/hooks.go#L14>)
+## func [StringToMetaV1DurationHookFunc](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/hooks.go#L17>)
 
 ```go
 func StringToMetaV1DurationHookFunc() mapstructure.DecodeHookFunc
 ```
 
 StringToMetaV1DurationHookFunc returns a DecodeHookFunc that converts strings to metav1.Duration.
+
+## func [TemplatedStringHookFunc](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/hooks.go#L36>)
+
+```go
+func TemplatedStringHookFunc() mapstructure.DecodeHookFunc
+```
 
 ## type [BaseCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L47-L54>)
 
@@ -190,18 +200,18 @@ HTTPCheck configures a check for the response from a given URL. The only require
 ```go
 type HTTPCheck struct {
     // URL is the URL to  be checked.
-    URL string `mapstructure:"url" json:"url"`
+    URL TemplatedString `mapstructure:"url" json:"url"`
     // Method is the HTTP method to use for this check.
     // Method is optional and defaults to `GET` if undefined.
     Method string `mapstructure:"method,omitempty" json:"method,omitempty"`
     // Headers to set on the request
-    Headers map[string]string `mapstructure:"headers,omitempty" json:"headers,omitempty"`
+    Headers map[string]TemplatedString `mapstructure:"headers,omitempty" json:"headers,omitempty"`
     // Body is an optional request body to be posted to the target URL.
-    Body string `mapstructure:"body,omitempty" json:"body,omitempty"`
+    Body TemplatedString `mapstructure:"body,omitempty" json:"body,omitempty"`
     // ExpectedStatus is the expected response status code, defaults to `200`.
     ExpectedStatus int `mapstructure:"expectedStatus,omitempty" json:"expectedStatus,omitempty"`
     // ExpectedBody is optional; if defined, makes the check fail if the response body does not match
-    ExpectedBody string `mapstructure:"expectedBody,omitempty" json:"expectedBody,omitempty"`
+    ExpectedBody TemplatedString `mapstructure:"expectedBody,omitempty" json:"expectedBody,omitempty"`
     // CertExpiryThreshold is the minimum amount of time that the TLS certificate should be valid for
     CertExpiryThreshold metav1.Duration `mapstructure:"expiryThreshold,omitempty" json:"expiryThreshold,omitempty"`
     BaseCheck
@@ -289,9 +299,9 @@ Peer represents a peer synthetic\-checker where to push checks to or download co
 
 ```go
 type Peer struct {
-    URL     string            `mapstructure:"url" json:"url"`
-    Headers map[string]string `mapstructure:"headers,omitempty" json:"headers,omitempty"`
-    Timeout metav1.Duration   `mapstructure:"timeout,omitempty" json:"timeout,omitempty"`
+    URL     TemplatedString            `mapstructure:"url" json:"url"`
+    Headers map[string]TemplatedString `mapstructure:"headers,omitempty" json:"headers,omitempty"`
+    Timeout metav1.Duration            `mapstructure:"timeout,omitempty" json:"timeout,omitempty"`
 }
 ```
 
@@ -321,6 +331,24 @@ type TLSCheck struct {
 
 ```go
 func (c TLSCheck) Equal(other TLSCheck) bool
+```
+
+## type [TemplatedString](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/templated_string.go#L9>)
+
+```go
+type TemplatedString string
+```
+
+### func \(TemplatedString\) [String](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/templated_string.go#L11>)
+
+```go
+func (t TemplatedString) String() string
+```
+
+### func \(\*TemplatedString\) [UnmarshalJSON](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/templated_string.go#L15>)
+
+```go
+func (t *TemplatedString) UnmarshalJSON(data []byte) error
 ```
 
 

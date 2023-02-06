@@ -58,7 +58,7 @@ func (i *Informer) RemoveUpstream(url string) {
 	i.Lock()
 	defer i.Unlock()
 	for idx, c := range i.config {
-		if c.URL == url {
+		if c.URL == config.TemplatedString(url) {
 			i.config = append(i.config[:idx], i.config[idx+1:]...)
 			return
 		}
@@ -120,14 +120,14 @@ func (i *Informer) informUpstreams(ctx context.Context, method, endpoint, body s
 	return eg.Wait()
 }
 
-func (i *Informer) inform(ctx context.Context, headers map[string]string, method, url, body string) error {
+func (i *Informer) inform(ctx context.Context, headers map[string]config.TemplatedString, method, url, body string) error {
 	req, err := retryablehttp.NewRequestWithContext(ctx, method, url, strings.NewReader(body))
 	if err != nil {
 		return fmt.Errorf("failed to create HTTP request for %q: %w", url, err)
 	}
 
 	for h, v := range headers {
-		req.Header.Add(h, v)
+		req.Header.Add(h, string(v))
 	}
 
 	return i.do(req)

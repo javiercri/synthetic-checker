@@ -74,7 +74,7 @@ func TestHttpCheck(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			httpmock.Activate()
 			defer httpmock.DeactivateAndReset()
-			httpmock.RegisterResponder(tt.config.Method, tt.config.URL, httpmock.ResponderFromResponse(&tt.response))
+			httpmock.RegisterResponder(tt.config.Method, tt.config.URL.String(), httpmock.ResponderFromResponse(&tt.response))
 			c, err := NewHTTPCheck("test", tt.config)
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)

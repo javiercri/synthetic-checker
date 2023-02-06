@@ -52,7 +52,7 @@ func (f *Fetcher) RemovePeer(url string) {
 	f.Lock()
 	defer f.Unlock()
 	for idx, c := range f.config {
-		if c.URL == url {
+		if c.URL == config.TemplatedString(url) {
 			f.config = append(f.config[:idx], f.config[idx+1:]...)
 			return
 		}

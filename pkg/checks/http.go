@@ -52,7 +52,7 @@ func NewHTTPCheck(name string, config config.HTTPCheck) (api.Check, error) {
 	if config.URL == "" {
 		return nil, fmt.Errorf("URL must not be empty")
 	}
-	if _, err := url.Parse(config.URL); err != nil {
+	if _, err := url.Parse(string(config.URL)); err != nil {
 		return nil, err
 	}
 	if name == "" {
@@ -133,10 +133,10 @@ func (c *httpCheck) Execute(ctx context.Context) (bool, error) {
 			return false, fmt.Errorf("failed to read response body: %w", err)
 		}
 
-		if !strings.Contains(string(body), c.config.ExpectedBody) {
+		if !strings.Contains(string(body), string(c.config.ExpectedBody)) {
 			return false, ErrorUnexpectedBody{
 				got:      string(body),
-				expected: c.config.ExpectedBody,
+				expected: string(c.config.ExpectedBody),
 			}
 		}
 	}
@@ -147,13 +147,13 @@ func (c *httpCheck) Execute(ctx context.Context) (bool, error) {
 // do executes the HTTP request to the target URL
 // It is the callers responsibility to close the response body
 func (c *httpCheck) do(ctx context.Context) (*http.Response, error) {
-	req, err := http.NewRequestWithContext(ctx, c.config.Method, c.config.URL, strings.NewReader(c.config.Body))
+	req, err := http.NewRequestWithContext(ctx, c.config.Method, string(c.config.URL), strings.NewReader(string(c.config.Body)))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create HTTP request: %w", err)
 	}
 
 	for h, v := range c.config.Headers {
-		req.Header.Add(h, v)
+		req.Header.Add(h, string(v))
 	}
 
 	resp, err := c.client.Do(req)

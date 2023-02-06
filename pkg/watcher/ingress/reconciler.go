@@ -247,7 +247,7 @@ func (r *Reconciler) setHTTPChecks(hosts, ports, endpoints []string, cfg config.
 				url = scheme + url
 				check, err := checks.NewHTTPCheck(url,
 					config.HTTPCheck{
-						URL:     url,
+						URL:     config.TemplatedString(url),
 						Headers: cfg.Headers,
 						Method:  cfg.Method,
 						Body:    cfg.Body,
@@ -277,14 +277,14 @@ func (r *Reconciler) getHTTPConfig(ingress *netv1.Ingress) (config.HTTPCheck, er
 		for k, v := range secret.Data {
 			switch k {
 			case "body":
-				cfg.Body = string(v)
+				cfg.Body = config.TemplatedString(v)
 			case "method":
 				cfg.Method = string(v)
 			default:
 				if cfg.Headers == nil {
-					cfg.Headers = make(map[string]string)
+					cfg.Headers = make(map[string]config.TemplatedString)
 				}
-				cfg.Headers[k] = string(v)
+				cfg.Headers[k] = config.TemplatedString(v)
 			}
 		}
 	}

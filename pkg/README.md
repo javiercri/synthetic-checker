@@ -10,6 +10,7 @@
 - [informer](informer/README.md)
 - [leaderelection](leaderelection/README.md)
 - [server](server/README.md)
+- [template](template/README.md)
 - [watcher](watcher/README.md)
 - [watcher/consts](watcher/consts/README.md)
 - [watcher/filter](watcher/filter/README.md)
