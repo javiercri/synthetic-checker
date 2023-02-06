@@ -333,23 +333,27 @@ type TLSCheck struct {
 func (c TLSCheck) Equal(other TLSCheck) bool
 ```
 
-## type [TemplatedString](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/templated_string.go#L9>)
+## type [TemplatedString](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/templated_string.go#L12>)
+
+TemplatedString is a custom string type that allows setting its value as a go text template. The template is automatically rendered when unmarsheling fields of this type. see the template package for more details.
 
 ```go
 type TemplatedString string
 ```
 
-### func \(TemplatedString\) [String](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/templated_string.go#L11>)
+### func \(TemplatedString\) [String](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/templated_string.go#L14>)
 
 ```go
 func (t TemplatedString) String() string
 ```
 
-### func \(\*TemplatedString\) [UnmarshalJSON](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/templated_string.go#L15>)
+### func \(\*TemplatedString\) [UnmarshalJSON](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/templated_string.go#L19>)
 
 ```go
 func (t *TemplatedString) UnmarshalJSON(data []byte) error
 ```
+
+UnmarshalJSON automatically renders the template set on the TemplatedString value
 
 
 
