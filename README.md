@@ -25,9 +25,9 @@ You can find the development docs in the [docs](./docs) folder and some integrat
 ## Usage
 
 This tool can be used either as a cli to run the checks once (with optional retries) and get the results printed out as JSON, along with an exit status indicating if all checks passed or not.
-In this mode, the checks are stil executed in parallel and the configured `initialDelay` is stil used.
 Or as a service that periodically runs the checks and exposes the results through an API endpoint and as SLI metrics in the Prometheus format under the `/metrics` endpoint.
 Use it together with Prometheus, Grafana and AlertManager to create dashboards and alerts for your checks.
+In the cli mode, the checks are stil executed in parallel and the configured `initialDelay` is stil used.
 
 The main use case for this tool is to run one deployment in one Kubernetes cluster watching Ingress resources for generating checks and informing a remote deployment,
 in another cluster or VM, that will actually run the checks, generating metrics that can be scrapped by Prometheus to build SLI dashboards and alerts.
@@ -259,6 +259,7 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/server-alias: "test.example.com"
     synthetic-checker/skip: "false" # set to true to ignore this resource, defaults to false
+    synthetic-checker/ignore-delete: "false" # set to true to keep the checks even if the resource is deleted, useful for alerting on accidental deletes, defaults to false
     synthetic-checker/interval: "60s" # defaults to 30s
     synthetic-checker/ports: "80,443" # defaults to 443
     synthetic-checker/TLS: "false" # set this if all ports use TLS, defaults to false and only port 443 will use a TLS check

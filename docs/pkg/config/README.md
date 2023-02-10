@@ -35,7 +35,7 @@ import "github.com/luisdavim/synthetic-checker/pkg/config"
   - [func (t *TemplatedString) UnmarshalJSON(data []byte) error](<#func-templatedstring-unmarshaljson>)
 
 
-## func [DecodeHooks](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/hooks.go#L56>)
+## func [DecodeHooks](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/hooks.go#L58>)
 
 ```go
 func DecodeHooks() viper.DecoderConfigOption
@@ -51,11 +51,13 @@ func StringToMetaV1DurationHookFunc() mapstructure.DecodeHookFunc
 
 StringToMetaV1DurationHookFunc returns a DecodeHookFunc that converts strings to metav1.Duration.
 
-## func [TemplatedStringHookFunc](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/hooks.go#L36>)
+## func [TemplatedStringHookFunc](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/hooks.go#L38>)
 
 ```go
 func TemplatedStringHookFunc() mapstructure.DecodeHookFunc
 ```
+
+TemplatedStringHookFunc returns a DecodeHookFunc that renders go templates from a TemplatedString field
 
 ## type [BaseCheck](<https://github.com/luisdavim/synthetic-checker/blob/main/pkg/config/config.go#L47-L54>)
 

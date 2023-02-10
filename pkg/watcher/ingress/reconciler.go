@@ -292,6 +292,24 @@ func (r *Reconciler) getHTTPConfig(ingress *netv1.Ingress) (config.HTTPCheck, er
 }
 
 func (r *Reconciler) cleanup(ingress *netv1.Ingress) error {
+	skip, _ := strconv.ParseBool(ingress.Annotations[consts.IgnoreDeleteAnnotation])
+	if !skip {
+		if err := r.deleteChecks(ingress); err != nil {
+			return err
+		}
+	}
+
+	// we won't be tracking this resource anymore
+	controllerutil.RemoveFinalizer(ingress, consts.FinalizerName)
+	if err := r.Update(context.Background(), ingress); err != nil {
+		return fmt.Errorf("failed to remove finalizer: %w", err)
+	}
+
+	return nil
+}
+
+// stop all the checks related to this ingress resource
+func (r *Reconciler) deleteChecks(ingress *netv1.Ingress) error {
 	hosts := getHosts(ingress)
 	ports := getPorts(ingress)
 
@@ -329,12 +347,6 @@ func (r *Reconciler) cleanup(ingress *netv1.Ingress) error {
 				r.Checker.DelCheck(name)
 			}
 		}
-	}
-
-	// we won't be tracking this resource anymore
-	controllerutil.RemoveFinalizer(ingress, consts.FinalizerName)
-	if err := r.Update(context.Background(), ingress); err != nil {
-		return fmt.Errorf("failed to remove finalizer: %w", err)
 	}
 
 	return nil
