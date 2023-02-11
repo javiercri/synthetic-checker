@@ -64,6 +64,7 @@ Use cases:
 
 - The cli mode can be used to run as an `init` container or as an `helm` pre or post hook as a pre-flight check or a post install/upgrade validation.
 - The cli mode can also be useful in a CI pipeline to validate services after they are deployed.
+- The cli mode can also be useful to run less frequent checks in a cron job (either a Kubernetes `CronJob` or a regular Linux cron job)
 - Running as a service allows to setup uptime monitoring checks that run periodically, the results can be obtained from an API or as Prometheus metrics.
 - Check if your TLS certs are about to expire.
 - The informer mode can be used to setup checks across regions or across different Kubernetes clusters.

@@ -11,7 +11,7 @@ Copyright © 2022 NAME HERE \<EMAIL ADDRESS\>
 ## Index
 
 - [func Execute()](<#func-execute>)
-- [func NewCmd(cfg *config.Config) *cobra.Command](<#func-newcmd>)
+- [func New(cfg *config.Config) *cobra.Command](<#func-new>)
 
 
 ## func [Execute](<https://github.com/luisdavim/synthetic-checker/blob/main/cmd/root.go#L34>)
@@ -22,10 +22,10 @@ func Execute()
 
 Execute adds all child commands to the root command and sets flags appropriately. This is called by main.main\(\). It only needs to happen once to the rootCmd.
 
-## func [NewCmd](<https://github.com/luisdavim/synthetic-checker/blob/main/cmd/root.go#L19>)
+## func [New](<https://github.com/luisdavim/synthetic-checker/blob/main/cmd/root.go#L19>)
 
 ```go
-func NewCmd(cfg *config.Config) *cobra.Command
+func New(cfg *config.Config) *cobra.Command
 ```
 
 

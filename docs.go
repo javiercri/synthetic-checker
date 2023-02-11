@@ -12,7 +12,7 @@ import (
 
 // genDocs is a helper function to generate the tool's usage documentation
 func genDocs(docsPath string) {
-	rootCmd := cmd.NewCmd(nil)
+	rootCmd := cmd.New(nil)
 
 	if err := doc.GenMarkdownTree(rootCmd, docsPath); err != nil {
 		os.Exit(1)

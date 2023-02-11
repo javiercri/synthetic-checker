@@ -16,7 +16,7 @@ import (
 	"github.com/luisdavim/synthetic-checker/pkg/config"
 )
 
-func NewCmd(cfg *config.Config) *cobra.Command {
+func New(cfg *config.Config) *cobra.Command {
 	// cmd represents the base command when called without any subcommands
 	cmd := &cobra.Command{
 		Use:   "synthetic-checker",
@@ -46,7 +46,7 @@ func Execute() {
 		}
 	})
 
-	cmd := NewCmd(&cfg)
+	cmd := New(&cfg)
 	cmd.PersistentFlags().StringVarP(&cfgFile, "config", "c", "", "config file (default is $HOME/.checks.yaml)")
 
 	if err := cmd.Execute(); err != nil {
